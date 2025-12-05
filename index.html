@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KP Fitness - Loading...</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .loading-container {
+            text-align: center;
+            max-width: 400px;
+            padding: 2rem;
+        }
+
+        .logo {
+            font-size: 3rem;
+            font-weight: 800;
+            color: #ff6b00;
+            margin-bottom: 2rem;
+        }
+
+        .spinner {
+            border: 4px solid rgba(255, 107, 0, 0.3);
+            border-radius: 50%;
+            border-top: 4px solid #ff6b00;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 2rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            color: #ffffff;
+        }
+
+        .loading-subtitle {
+            color: #cccccc;
+            margin-bottom: 2rem;
+        }
+
+        .manual-link {
+            color: #ff6b00;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .manual-link:hover {
+            text-decoration: underline;
+        }
+
+        .features {
+            margin-top: 2rem;
+            text-align: left;
+        }
+
+        .features h4 {
+            color: #ff6b00;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .features ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .features li {
+            padding: 0.5rem 0;
+            color: #cccccc;
+            display: flex;
+            align-items: center;
+        }
+
+        .features li i {
+            color: #ff6b00;
+            margin-right: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="loading-container">
+        <div class="logo">
+            <i class="fas fa-dumbbell"></i> KP FITNESS
+        </div>
+        
+        <div class="spinner"></div>
+        
+        <h2 class="loading-text">Loading Your Fitness Journey...</h2>
+        <p class="loading-subtitle">
+            Redirecting to the KP Fitness Class Reservation System
+        </p>
+        
+        <p>If you are not redirected automatically, 
+           <a href="index.php" class="manual-link">click here</a>
+        </p>
+        
+        <div class="features">
+            <h4>✨ Features You'll Enjoy:</h4>
+            <ul>
+                <li><i class="fas fa-calendar-alt"></i> Real-time class booking</li>
+                <li><i class="fas fa-robot"></i> AI-powered workout planner</li>
+                <li><i class="fas fa-users"></i> Expert trainer guidance</li>
+                <li><i class="fas fa-mobile-alt"></i> Mobile-friendly interface</li>
+                <li><i class="fas fa-credit-card"></i> Secure payment processing</li>
+                <li><i class="fas fa-chart-line"></i> Progress tracking & analytics</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Redirect to the main PHP application after 3 seconds
+        setTimeout(function() {
+            window.location.href = 'index.php';
+        }, 3000);
+
+        // Also try to redirect immediately if possible
+        window.addEventListener('load', function() {
+            // Small delay to ensure page is fully loaded
+            setTimeout(function() {
+                window.location.href = 'index.php';
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
