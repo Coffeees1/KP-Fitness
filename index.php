@@ -126,14 +126,28 @@ require_once 'includes/config.php';
 
         /* Hero Section */
         .hero {
+            --hero-bg: url('https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=1600&q=80');
             min-height: 100vh;
             display: flex;
             align-items: center;
-            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), 
-                        url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800"><defs><linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:%23ff6b00;stop-opacity:0.1" /><stop offset="100%" style="stop-color:%23ff8533;stop-opacity:0.05" /></linearGradient></defs><rect width="1200" height="800" fill="url(%23grad1)"/></svg>');
+            position: relative;
+            background: #0f0f0f;
+            overflow: hidden;
+        }
+
+        .hero-bg {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(rgba(40, 40, 40, 0.7), rgba(40, 40, 40, 0.7)), var(--hero-bg);
             background-size: cover;
             background-position: center;
-            position: relative;
+            transition: opacity 0.9s ease;
+            opacity: 1;
+            z-index: 0;
+        }
+
+        .hero-bg.fade {
+            opacity: 0;
         }
 
         .hero-content {
@@ -141,6 +155,8 @@ require_once 'includes/config.php';
             margin: 0 auto;
             padding: 0 2rem;
             text-align: center;
+            position: relative;
+            z-index: 1;
         }
 
         .hero h1 {
@@ -448,6 +464,7 @@ require_once 'includes/config.php';
 
     <!-- Hero Section -->
     <section class="hero">
+        <div class="hero-bg"></div>
         <div class="hero-content fade-in-up">
             <h1>Unlock Your Inner Strength</h1>
             <p>Join KP Fitness and transform your fitness journey with our comprehensive class reservation system, expert trainers, and state-of-the-art facilities.</p>
@@ -644,6 +661,40 @@ require_once 'includes/config.php';
                 navbar.style.background = 'rgba(26, 26, 26, 0.95)';
             }
         });
+
+        // Hero background rotator with fade
+        const hero = document.querySelector('.hero');
+        const heroBg = document.querySelector('.hero-bg');
+        const heroImages = [
+            'https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=1600&q=80',
+            'https://images.unsplash.com/photo-1579758629938-03607ccdbaba?auto=format&fit=crop&w=1600&q=80',
+            'https://images.unsplash.com/photo-1518611012118-41a5c9e5e0a6?auto=format&fit=crop&w=1600&q=80'
+        ];
+
+        function setHeroImage(index) {
+            if (!hero || !heroBg) return;
+            const url = heroImages[index % heroImages.length];
+
+            // Fade out, swap image, then fade back in
+            heroBg.classList.add('fade');
+            setTimeout(() => {
+                hero.style.setProperty('--hero-bg', `url('${url}')`);
+                heroBg.classList.remove('fade');
+            }, 450); // half of transition duration for smoother crossfade
+        }
+
+        // Preload images to avoid flash
+        heroImages.forEach(src => {
+            const img = new Image();
+            img.src = src;
+        });
+
+        let heroIndex = 0;
+        setHeroImage(heroIndex);
+        setInterval(() => {
+            heroIndex = (heroIndex + 1) % heroImages.length;
+            setHeroImage(heroIndex);
+        }, 7000);
     </script>
 </body>
 </html>
