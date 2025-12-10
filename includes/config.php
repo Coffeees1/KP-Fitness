@@ -186,12 +186,13 @@ function get_bmi_category($bmi) {
 }
 
 /**
- * Formats a date string.
+ * Formats a date string to dd/mm/yyyy.
  * @param string $date The date string to format.
  * @return string The formatted date.
  */
 function format_date($date) {
-    return date('D, M j, Y', strtotime($date));
+    if (!$date) return '-';
+    return date('d/m/Y', strtotime($date));
 }
 
 /**
@@ -200,8 +201,10 @@ function format_date($date) {
  * @return string The formatted time.
  */
 function format_time($time) {
-    return date('g:i A', strtotime($time));
+    if (!$time) return '-';
+    return date('h:i A', strtotime($time)); // Use 'h' for 12-hour format with leading zeros, 'g' for 12-hour without. 'h' is better.
 }
+
 
 /**
  * Formats a number as currency.

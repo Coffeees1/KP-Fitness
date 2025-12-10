@@ -14,126 +14,135 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = sanitize_input($_POST['email']);
     $password = $_POST['password'];
 
-    // --- Validation ---
-    if (empty($email)) {
-        $errors[] = 'Email is required.';
-    }
-    if (empty($password)) {
-        $errors[] = 'Password is required.';
-    }
+    if (empty($email)) { $errors[] = 'Email is required.'; }
+    if (empty($password)) { $errors[] = 'Password is required.'; }
 
-    // --- If no validation errors, proceed ---
     if (empty($errors)) {
         try {
-            // Find user by email
             $stmt = $pdo->prepare("SELECT UserID, FullName, Email, Password, Role, IsActive FROM users WHERE Email = ?");
             $stmt->execute([$email]);
             $user = $stmt->fetch();
 
-            // Verify user and password
             if ($user && password_verify($password, $user['Password'])) {
-                
-                // Check if account is active
                 if ($user['IsActive'] == 0) {
                     $errors[] = 'Your account has been deactivated. Please contact support.';
                 } else {
-                    // --- Login Success ---
-                    // Regenerate session ID to prevent session fixation
                     session_regenerate_id(true);
-
-                    // Store user data in session
                     $_SESSION['UserID'] = $user['UserID'];
                     $_SESSION['FullName'] = $user['FullName'];
                     $_SESSION['Role'] = $user['Role'];
-
-                    // Redirect to the central dashboard
                     redirect('dashboard.php');
                 }
-
             } else {
-                // Login failed
                 $errors[] = 'Invalid email or password.';
             }
-
         } catch (PDOException $e) {
             $errors[] = "Database error. Please try again later.";
         }
     }
 }
 
-include 'includes/header.php';
+// We are not including the main header.php because we need to add Bootstrap specifically for this page.
 ?>
-
-<style>
-    .auth-form-container {
-        max-width: 500px;
-        margin: 3rem auto;
-        background: var(--light-bg);
-        padding: 2rem;
-        border-radius: 12px;
-        border: 1px solid var(--border-color);
-    }
-    .auth-form-container h1 {
-        text-align: center;
-        color: var(--primary-color);
-        margin-bottom: 2rem;
-    }
-    .form-group {
-        margin-bottom: 1.5rem;
-    }
-    .form-group label {
-        display: block;
-        margin-bottom: 0.5rem;
-        font-weight: 600;
-    }
-    .form-group input {
-        width: 100%;
-        padding: 1rem;
-        background: var(--dark-bg);
-        border: 2px solid var(--border-color);
-        border-radius: 8px;
-        color: var(--text-light);
-        font-size: 1rem;
-        transition: all 0.3s ease;
-    }
-    .form-group input:focus {
-        outline: none;
-        border-color: var(--primary-color);
-    }
-    .form-footer {
-        text-align: center;
-        margin-top: 1.5rem;
-    }
-</style>
-
-<div class="auth-form-container">
-    <h1>Member Login</h1>
-
-    <?php if (!empty($errors)): ?>
-        <div class="alert alert-error">
-            <ul>
-                <?php foreach ($errors as $error): ?>
-                    <li><?php echo $error; ?></li>
-                <?php endforeach; ?>
-            </ul>
-        </div>
-    <?php endif; ?>
-
-    <form action="login.php" method="POST">
-        <div class="form-group">
-            <label for="email">Email Address</label>
-            <input type="email" id="email" name="email" value="<?php echo htmlspecialchars($email); ?>" required>
-        </div>
-        <div class="form-group">
-            <label for="password">Password</label>
-            <input type="password" id="password" name="password" required>
-        </div>
-        <button type="submit" class="btn btn-primary" style="width: 100%;">Login</button>
-    </form>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><?php echo PAGE_TITLE . ' - ' . SITE_NAME; ?></title>
     
-    <div class="form-footer">
-        <p>Don't have an account? <a href="register.php" style="color: var(--primary-color);">Register here</a></p>
+    <!-- Bootstrap 5.3 CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+
+    <!-- Custom Styles to match the dark theme -->
+    <style>
+        :root {
+            --primary-color: #ff6b00;
+            --dark-bg: #1a1a1a;
+            --light-bg: #2d2d2d;
+        }
+        body {
+            background-color: var(--dark-bg);
+            color: #fff;
+        }
+        .form-container {
+            background-color: var(--light-bg);
+            border: 1px solid var(--primary-color);
+            border-radius: 1rem;
+        }
+        .form-control {
+            background-color: var(--dark-bg);
+            border-color: #444;
+            color: #fff;
+        }
+        .form-control:focus {
+            background-color: var(--dark-bg);
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.25rem rgba(255, 107, 0, 0.25);
+            color: #fff;
+        }
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        .btn-primary:hover {
+            background-color: #ff8533;
+            border-color: #ff8533;
+        }
+        .form-footer a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+        .form-footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="row justify-content-center align-items-center vh-100">
+        <div class="col-md-6 col-lg-5">
+            <div class="form-container p-4 p-sm-5">
+                <h1 class="text-center mb-4" style="color: var(--primary-color);">
+                    <i class="fas fa-dumbbell"></i> KP Fitness Login
+                </h1>
+
+                <?php if (!empty($errors)): ?>
+                    <div class="alert alert-danger">
+                        <ul class="mb-0">
+                            <?php foreach ($errors as $error): ?>
+                                <li><?php echo $error; ?></li>
+                            <?php endforeach; ?>
+                        </ul>
+                    </div>
+                <?php endif; ?>
+
+                <form action="login.php" method="POST">
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email Address</label>
+                        <input type="email" class="form-control" id="email" name="email" value="<?php echo htmlspecialchars($email); ?>" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="password" name="password" required>
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg">Login</button>
+                    </div>
+                </form>
+                
+                <div class="form-footer text-center mt-4">
+                    <p>Don't have an account? <a href="register.php">Register here</a></p>
+                    <p><a href="index.php">Back to Home</a></p>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
-<?php include 'includes/footer.php'; ?>
+<!-- Bootstrap 5.3 JS Bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

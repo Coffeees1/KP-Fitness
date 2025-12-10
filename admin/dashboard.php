@@ -1,200 +1,108 @@
 <?php
 define('PAGE_TITLE', 'Admin Dashboard');
 require_once '../includes/config.php';
-require_admin(); // Ensure only admins can access this page
+require_admin(); // Ensure only admins can access
 
-// Get dashboard statistics
+// --- Fetch dashboard statistics ---
 try {
-    // Total users (excluding admins)
-    $stmt = $pdo->prepare("SELECT COUNT(*) FROM users WHERE Role != 'admin'");
-    $stmt->execute();
-    $totalUsers = $stmt->fetchColumn();
-    
-    // Total trainers
-    $stmt = $pdo->prepare("SELECT COUNT(*) FROM users WHERE Role = 'trainer'");
-    $stmt->execute();
-    $totalTrainers = $stmt->fetchColumn();
-    
-    // Total clients
-    $stmt = $pdo->prepare("SELECT COUNT(*) FROM users WHERE Role = 'client'");
-    $stmt->execute();
-    $totalClients = $stmt->fetchColumn();
-    
-    // Total active classes
-    $stmt = $pdo->prepare("SELECT COUNT(*) FROM classes WHERE IsActive = TRUE");
-    $stmt->execute();
-    $totalClasses = $stmt->fetchColumn();
-    
-    // Total sessions this month
-    $stmt = $pdo->prepare("SELECT COUNT(*) FROM sessions WHERE MONTH(SessionDate) = MONTH(CURRENT_DATE()) AND YEAR(SessionDate) = YEAR(CURRENT_DATE())");
-    $stmt->execute();
-    $totalSessionsThisMonth = $stmt->fetchColumn();
-    
-    // Total revenue this month
-    $stmt = $pdo->prepare("SELECT COALESCE(SUM(Amount), 0) FROM payments WHERE MONTH(PaymentDate) = MONTH(CURRENT_DATE()) AND YEAR(PaymentDate) = YEAR(CURRENT_DATE()) AND Status = 'completed'");
-    $stmt->execute();
-    $monthlyRevenue = $stmt->fetchColumn();
-    
+    $stats = [
+        'total_users' => $pdo->query("SELECT COUNT(*) FROM users WHERE Role != 'admin'")->fetchColumn(),
+        'total_trainers' => $pdo->query("SELECT COUNT(*) FROM users WHERE Role = 'trainer'")->fetchColumn(),
+        'total_clients' => $pdo->query("SELECT COUNT(*) FROM users WHERE Role = 'client'")->fetchColumn(),
+        'total_classes' => $pdo->query("SELECT COUNT(*) FROM classes WHERE IsActive = TRUE")->fetchColumn(),
+        'sessions_this_month' => $pdo->query("SELECT COUNT(*) FROM sessions WHERE MONTH(SessionDate) = MONTH(CURRENT_DATE()) AND YEAR(SessionDate) = YEAR(CURRENT_DATE())")->fetchColumn(),
+        'monthly_revenue' => $pdo->query("SELECT COALESCE(SUM(Amount), 0) FROM payments WHERE MONTH(PaymentDate) = MONTH(CURRENT_DATE()) AND YEAR(PaymentDate) = YEAR(CURRENT_DATE()) AND Status = 'completed'")->fetchColumn()
+    ];
 } catch (PDOException $e) {
     $error_message = 'Error loading dashboard data: ' . $e->getMessage();
     // Initialize stats to 0 on error
-    $totalUsers = $totalTrainers = $totalClients = $totalClasses = $totalSessionsThisMonth = $monthlyRevenue = 0;
+    $stats = array_fill_keys(array_keys($stats ?? []), 0);
 }
+
+// Data for the cards
+$cards = [
+    ['label' => 'Total Users', 'value' => number_format($stats['total_users']), 'icon' => 'fa-users', 'color' => 'primary'],
+    ['label' => 'Trainers', 'value' => number_format($stats['total_trainers']), 'icon' => 'fa-user-tie', 'color' => 'success'],
+    ['label' => 'Clients', 'value' => number_format($stats['total_clients']), 'icon' => 'fa-user-friends', 'color' => 'info'],
+    ['label' => 'Active Classes', 'value' => number_format($stats['total_classes']), 'icon' => 'fa-dumbbell', 'color' => 'danger'],
+    ['label' => 'Sessions This Month', 'value' => number_format($stats['sessions_this_month']), 'icon' => 'fa-calendar-alt', 'color' => 'warning'],
+    ['label' => 'Revenue This Month', 'value' => format_currency($stats['monthly_revenue']), 'icon' => 'fa-money-bill-wave', 'color' => 'primary'],
+];
 
 include 'includes/admin_header.php';
 ?>
 
-<style>
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 2rem;
-}
-
-.stat-card {
-    background: var(--light-bg);
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    padding: 1.5rem;
-    display: flex;
-    align-items: center;
-    gap: 1.5rem;
-    transition: transform 0.3s ease;
-}
-
-.stat-card:hover {
-    transform: translateY(-5px);
-}
-
-.stat-icon {
-    font-size: 2.5rem;
-    color: var(--primary-color);
-}
-
-.stat-info .stat-number {
-    font-size: 2rem;
-    font-weight: 800;
-    color: var(--text-light);
-}
-
-.stat-info .stat-label {
-    color: var(--text-dark);
-    font-size: 0.9rem;
-}
-
-.quick-actions {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1rem;
-}
-
-.action-card {
-    background: var(--light-bg);
-    border: 2px solid var(--border-color);
-    border-radius: 8px;
-    padding: 1.5rem;
-    text-align: center;
-    color: var(--primary-color);
-    text-decoration: none;
-    transition: all 0.3s ease;
-}
-
-.action-card:hover {
-    background: var(--primary-color);
-    color: var(--text-light);
-    transform: translateY(-5px);
-}
-
-.action-card i {
-    font-size: 2rem;
-    margin-bottom: 1rem;
-    display: block;
-}
-
-.action-card span {
-    font-weight: 600;
-    font-size: 1.1rem;
-}
-</style>
-
-<div class="page-header">
-    <h1>Admin Dashboard</h1>
-    <p>Overview of the KP Fitness system.</p>
+<div class="d-flex justify-content-between align-items-center pb-3 mb-4 border-bottom">
+    <h1 class="h2">Dashboard</h1>
+    <p class="lead text-body-secondary m-0">Overview of the KP Fitness system.</p>
 </div>
 
+
 <?php if (isset($error_message)): ?>
-    <div class="alert alert-error"><?php echo $error_message; ?></div>
+    <div class="alert alert-danger"><?php echo $error_message; ?></div>
 <?php endif; ?>
 
 <!-- Stats Grid -->
-<div class="stats-grid">
-    <div class="stat-card">
-        <div class="stat-icon"><i class="fas fa-users"></i></div>
-        <div class="stat-info">
-            <div class="stat-number"><?php echo number_format($totalUsers); ?></div>
-            <div class="stat-label">Total Users</div>
+<div class="row g-4 mb-4">
+    <?php foreach ($cards as $card): ?>
+    <div class="col-md-6 col-lg-4">
+        <div class="card text-bg-dark h-100">
+            <div class="card-body d-flex align-items-center">
+                <div class="me-3 fs-2 text-<?php echo $card['color']; ?>">
+                    <i class="fas <?php echo $card['icon']; ?>"></i>
+                </div>
+                <div>
+                    <h4 class="card-title h2 mb-0"><?php echo $card['value']; ?></h4>
+                    <p class="card-text text-body-secondary"><?php echo $card['label']; ?></p>
+                </div>
+            </div>
         </div>
     </div>
-    <div class="stat-card">
-        <div class="stat-icon"><i class="fas fa-user-tie"></i></div>
-        <div class="stat-info">
-            <div class="stat-number"><?php echo number_format($totalTrainers); ?></div>
-            <div class="stat-label">Trainers</div>
-        </div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-icon"><i class="fas fa-user-friends"></i></div>
-        <div class="stat-info">
-            <div class="stat-number"><?php echo number_format($totalClients); ?></div>
-            <div class="stat-label">Clients</div>
-        </div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-icon"><i class="fas fa-dumbbell"></i></div>
-        <div class="stat-info">
-            <div class="stat-number"><?php echo number_format($totalClasses); ?></div>
-            <div class="stat-label">Active Classes</div>
-        </div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-icon"><i class="fas fa-calendar-alt"></i></div>
-        <div class="stat-info">
-            <div class="stat-number"><?php echo number_format($totalSessionsThisMonth); ?></div>
-            <div class="stat-label">Sessions This Month</div>
-        </div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-icon"><i class="fas fa-money-bill-wave"></i></div>
-        <div class="stat-info">
-            <div class="stat-number"><?php echo format_currency($monthlyRevenue); ?></div>
-            <div class="stat-label">Revenue This Month</div>
-        </div>
-    </div>
+    <?php endforeach; ?>
 </div>
 
 <!-- Quick Actions -->
-<div class="page-header">
-    <h2>Quick Actions</h2>
+<div class="pb-3 mb-4 border-bottom">
+    <h2 class="h3">Quick Actions</h2>
 </div>
-<div class="quick-actions">
-    <a href="users.php" class="action-card">
-        <i class="fas fa-users-cog"></i>
-        <span>Manage Users</span>
-    </a>
-    <a href="classes.php" class="action-card">
-        <i class="fas fa-dumbbell"></i>
-        <span>Manage Classes</span>
-    </a>
-    <a href="sessions.php" class="action-card">
-        <i class="fas fa-calendar-plus"></i>
-        <span>Schedule Sessions</span>
-    </a>
-    <a href="reports.php" class="action-card">
-        <i class="fas fa-chart-line"></i>
-        <span>View Reports</span>
-    </a>
+<div class="row g-4">
+    <div class="col-md-6 col-lg-3">
+        <a href="users.php" class="card text-bg-dark text-center text-decoration-none h-100">
+            <div class="card-body p-4">
+                <i class="fas fa-users-cog fa-3x text-primary mb-3"></i>
+                <h5 class="card-title">Manage Users</h5>
+            </div>
+        </a>
+    </div>
+     <div class="col-md-6 col-lg-3">
+        <a href="classes.php" class="card text-bg-dark text-center text-decoration-none h-100">
+            <div class="card-body p-4">
+                <i class="fas fa-dumbbell fa-3x text-primary mb-3"></i>
+                <h5 class="card-title">Manage Classes</h5>
+            </div>
+        </a>
+    </div>
+     <div class="col-md-6 col-lg-3">
+        <a href="sessions.php" class="card text-bg-dark text-center text-decoration-none h-100">
+            <div class="card-body p-4">
+                <i class="fas fa-calendar-plus fa-3x text-primary mb-3"></i>
+                <h5 class="card-title">Schedule Sessions</h5>
+            </div>
+        </a>
+    </div>
+     <div class="col-md-6 col-lg-3">
+        <a href="reports.php" class="card text-bg-dark text-center text-decoration-none h-100">
+            <div class="card-body p-4">
+                <i class="fas fa-chart-line fa-3x text-primary mb-3"></i>
+                <h5 class="card-title">View Reports</h5>
+            </div>
+        </a>
+    </div>
 </div>
 
 
-<?php include 'includes/admin_footer.php'; ?>
+<?php 
+// Also mark the corresponding TODO as complete
+$todos_list[3]['status'] = 'completed';
+include 'includes/admin_footer.php'; 
+?>

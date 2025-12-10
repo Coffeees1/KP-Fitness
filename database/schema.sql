@@ -125,7 +125,9 @@ CREATE TABLE `reservations` (
   `BookingDate` timestamp NOT NULL DEFAULT current_timestamp(),
   `Status` enum('booked','cancelled','attended','no_show') DEFAULT 'booked',
   `UserID` int(11) NOT NULL,
-  `SessionID` int(11) NOT NULL
+  `SessionID` int(11) NOT NULL,
+  `Rating` DECIMAL(2,1) DEFAULT NULL,
+  `RatingComment` TEXT DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
