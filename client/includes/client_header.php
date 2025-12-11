@@ -59,6 +59,11 @@ $current_page = basename($_SERVER['PHP_SELF']);
                 <i class="fas fa-robot me-2"></i> AI Workout Planner
             </a>
         </li>
+        <li>
+            <a href="profile.php" class="nav-link text-white <?= $current_page == 'profile.php' ? 'active' : '' ?>">
+                <i class="fas fa-user-edit me-2"></i> My Profile
+            </a>
+        </li>
     </ul>
     <hr>
     <ul class="nav nav-pills flex-column">
