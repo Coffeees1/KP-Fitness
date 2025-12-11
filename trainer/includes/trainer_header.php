@@ -56,16 +56,18 @@ $current_page = basename($_SERVER['PHP_SELF']);
         </li>
     </ul>
     <hr>
-    <div class="dropdown">
-        <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false">
-            <strong class="mx-1"><?php echo htmlspecialchars(explode(' ', $_SESSION['FullName'])[0]); ?></strong>
-        </a>
-        <ul class="dropdown-menu dropdown-menu-dark text-small shadow" aria-labelledby="dropdownUser1">
-            <li><a class="dropdown-item" href="../index.php" target="_blank">View Main Site</a></li>
-            <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item" href="../logout.php">Sign out</a></li>
-        </ul>
-    </div>
+    <ul class="nav nav-pills flex-column">
+        <li class="nav-item">
+            <a href="../index.php" class="nav-link text-white" target="_blank">
+                <i class="fas fa-home me-2"></i> View Main Site
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="../logout.php" class="nav-link text-white">
+                <i class="fas fa-sign-out-alt me-2"></i> Sign out
+            </a>
+        </li>
+    </ul>
 </div>
 
 <main class="flex-grow-1 p-3">
