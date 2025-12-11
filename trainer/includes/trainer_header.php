@@ -38,7 +38,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
         <span class="fs-4">Trainer</span>
     </a>
     <hr>
-    <ul class="nav nav-pills flex-column mb-auto">
+    <ul class="nav nav-pills flex-column sidebar-main-nav mb-auto">
         <li class="nav-item">
             <a href="dashboard.php" class="nav-link text-white <?= $current_page == 'dashboard.php' ? 'active' : '' ?>">
                 <i class="fas fa-tachometer-alt me-2"></i> Dashboard
