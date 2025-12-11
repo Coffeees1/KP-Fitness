@@ -31,27 +31,27 @@ $current_page = basename($_SERVER['PHP_SELF']);
     <ul class="nav nav-pills flex-column mb-auto">
         <li class="nav-item">
             <a href="dashboard.php" class="nav-link text-white <?= $current_page == 'dashboard.php' ? 'active' : '' ?>">
-                <i class="fas fa-tachometer-alt me-2"></i> Dashboard
+                <i class="fas fa-tachometer-alt me-2"></i> <span>Dashboard</span>
             </a>
         </li>
         <li>
             <a href="booking.php" class="nav-link text-white <?= $current_page == 'booking.php' ? 'active' : '' ?>">
-                <i class="fas fa-calendar-plus me-2"></i> Book Classes
+                <i class="fas fa-calendar-plus me-2"></i> <span>Book Classes</span>
             </a>
         </li>
         <li>
             <a href="membership.php" class="nav-link text-white <?= $current_page == 'membership.php' ? 'active' : '' ?>">
-                <i class="fas fa-id-card me-2"></i> Membership
+                <i class="fas fa-id-card me-2"></i> <span>Membership</span>
             </a>
         </li>
         <li>
             <a href="workout_planner.php" class="nav-link text-white <?= $current_page == 'workout_planner.php' ? 'active' : '' ?>">
-                <i class="fas fa-robot me-2"></i> AI Workout Planner
+                <i class="fas fa-robot me-2"></i> <span>AI Workout Planner</span>
             </a>
         </li>
         <li>
             <a href="profile.php" class="nav-link text-white <?= $current_page == 'profile.php' ? 'active' : '' ?>">
-                <i class="fas fa-user-edit me-2"></i> My Profile
+                <i class="fas fa-user-edit me-2"></i> <span>My Profile</span>
             </a>
         </li>
     </ul>
@@ -60,20 +60,27 @@ $current_page = basename($_SERVER['PHP_SELF']);
         <ul class="nav nav-pills flex-column">
             <li class="nav-item">
                 <a href="../index.php" class="nav-link text-white" target="_blank">
-                    <i class="fas fa-home me-2"></i> View Main Site
+                    <i class="fas fa-home me-2"></i> <span>View Main Site</span>
                 </a>
             </li>
             <li class="nav-item">
                 <a href="../logout.php" class="nav-link text-white">
-                    <i class="fas fa-sign-out-alt me-2"></i> Sign out
+                    <i class="fas fa-sign-out-alt me-2"></i> <span>Sign out</span>
                 </a>
             </li>
         </ul>
+        <hr>
+        <div class="text-center">
+            <button class="btn btn-outline-secondary" id="sidebarToggle">
+                <i class="fas fa-arrows-alt-h"></i>
+            </button>
+        </div>
     </div>
 </div>
 
-<main class="flex-grow-1 p-3">
+<main class="flex-grow-1 p-3 main-content">
     <!-- Page content will be injected here -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="../assets/js/main.js"></script>
 </body>
 </html>
