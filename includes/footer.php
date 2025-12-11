@@ -5,7 +5,6 @@
     .footer {
         text-align: center;
         padding: 2rem;
-        margin-top: 3rem;
         border-top: 1px solid var(--border-color);
         color: var(--text-dark);
     }
