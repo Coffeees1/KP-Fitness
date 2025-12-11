@@ -13,9 +13,19 @@
 body {
     background: linear-gradient(135deg, var(--dark-bg) 0%, var(--light-bg) 100%);
     color: var(--text-light);
-    min-height: 100vh; /* Ensure body takes full viewport height */
+}
+
+/* Layouts */
+.public-layout {
+    min-height: 100vh;
     display: flex;
     flex-direction: column;
+}
+
+.dashboard-layout {
+    display: flex;
+    flex-direction: row;
+    min-height: 100vh;
 }
 
 .card {

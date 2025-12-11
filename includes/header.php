@@ -29,7 +29,7 @@ $currentPage = basename($_SERVER['PHP_SELF']);
     <link href="assets/css/custom.css" rel="stylesheet">
     <link href="assets/css/theme.css" rel="stylesheet">
 </head>
-<body>
+<body class="public-layout">
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
     <div class="container-fluid">

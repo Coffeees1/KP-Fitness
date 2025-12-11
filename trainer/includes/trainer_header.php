@@ -19,18 +19,8 @@ $current_page = basename($_SERVER['PHP_SELF']);
     <!-- Custom CSS -->
     <link href="../assets/css/custom.css" rel="stylesheet">
     <link href="../assets/css/theme.css" rel="stylesheet">
-    <style>
-        body {
-            min-height: 100vh;
-            display: flex;
-        }
-        .sidebar {
-            width: 260px;
-            flex-shrink: 0;
-        }
-    </style>
 </head>
-<body>
+<body class="dashboard-layout">
 
 <div class="d-flex flex-column flex-shrink-0 p-3 text-white bg-dark sidebar">
     <a href="<?php echo SITE_URL . '/trainer/dashboard.php'; ?>" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
