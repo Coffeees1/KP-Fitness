@@ -38,7 +38,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
         <span class="fs-4">Admin</span>
     </a>
     <hr>
-    <ul class="nav nav-pills flex-column sidebar-main-nav mb-auto">
+    <ul class="nav nav-pills flex-column mb-auto">
         <li class="nav-item">
             <a href="dashboard.php" class="nav-link text-white <?= $current_page == 'dashboard.php' ? 'active' : '' ?>">
                 <i class="fas fa-tachometer-alt me-2"></i> Dashboard
@@ -66,18 +66,20 @@ $current_page = basename($_SERVER['PHP_SELF']);
         </li>
     </ul>
     <hr>
-    <ul class="nav nav-pills flex-column">
-        <li class="nav-item">
-            <a href="../index.php" class="nav-link text-white" target="_blank">
-                <i class="fas fa-home me-2"></i> View Main Site
-            </a>
-        </li>
-        <li class="nav-item">
-            <a href="../logout.php" class="nav-link text-white">
-                <i class="fas fa-sign-out-alt me-2"></i> Sign out
-            </a>
-        </li>
-    </ul>
+    <div class="sidebar-footer">
+        <ul class="nav nav-pills flex-column">
+            <li class="nav-item">
+                <a href="../index.php" class="nav-link text-white" target="_blank">
+                    <i class="fas fa-home me-2"></i> View Main Site
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="../logout.php" class="nav-link text-white">
+                    <i class="fas fa-sign-out-alt me-2"></i> Sign out
+                </a>
+            </li>
+        </ul>
+    </div>
 </div>
 
 <main class="flex-grow-1 p-3">
