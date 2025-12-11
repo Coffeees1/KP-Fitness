@@ -241,7 +241,7 @@ function get_bmi_category($bmi) {
  * @return string The formatted date.
  */
 function format_date($date) {
-    return date('D, M j, Y', strtotime($date));
+    return date('d/m/Y', strtotime($date));
 }
 
 /**
