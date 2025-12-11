@@ -64,7 +64,7 @@ include 'includes/trainer_header.php';
     <div class="col-md-3 mb-3">
         <div class="card text-center h-100">
             <div class="card-body">
-                <div class="display-4 fw-bold text-primary"><?php echo count($todaysSchedule); ?></div>
+                <div class="display-4 fw-bold text-warning"><?php echo count($todaysSchedule); ?></div>
                 <div class="text-muted">Classes Today</div>
             </div>
         </div>
@@ -72,7 +72,7 @@ include 'includes/trainer_header.php';
     <div class="col-md-3 mb-3">
         <div class="card text-center h-100">
             <div class="card-body">
-                <div class="display-4 fw-bold text-primary"><?php echo $totalClientBookings; ?></div>
+                <div class="display-4 fw-bold text-warning"><?php echo $totalClientBookings; ?></div>
                 <div class="text-muted">Total Client Bookings</div>
             </div>
         </div>
@@ -80,7 +80,7 @@ include 'includes/trainer_header.php';
     <div class="col-md-3 mb-3">
         <div class="card text-center h-100">
             <div class="card-body">
-                <div class="display-4 fw-bold text-primary"><?php echo $totalSessionsConducted; ?></div>
+                <div class="display-4 fw-bold text-warning"><?php echo $totalSessionsConducted; ?></div>
                 <div class="text-muted">Sessions Conducted</div>
             </div>
         </div>
@@ -88,7 +88,7 @@ include 'includes/trainer_header.php';
     <div class="col-md-3 mb-3">
         <div class="card text-center h-100">
             <div class="card-body">
-                <div class="display-4 fw-bold text-primary">4.7 <i class="fas fa-star text-warning"></i></div>
+                <div class="display-4 fw-bold text-warning">4.7 <i class="fas fa-star text-warning"></i></div>
                 <div class="text-muted">Average Rating</div>
             </div>
         </div>

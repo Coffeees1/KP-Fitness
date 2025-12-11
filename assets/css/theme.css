@@ -143,3 +143,38 @@ a {
 a:hover {
     color: var(--primary-hover);
 }
+
+/* Dashboard Stat Cards */
+.stat-card {
+    background-color: var(--light-bg);
+    border: 1px solid var(--border-color);
+    color: var(--text-light);
+    padding: 1.5rem;
+    border-radius: .25rem;
+    display: flex;
+    align-items: center;
+}
+
+.stat-card .stat-icon {
+    font-size: 2.5rem;
+    margin-right: 1rem;
+    color: var(--primary-color);
+}
+
+/* Dashboard Quick Action Cards */
+.quick-action-card {
+    background-color: var(--light-bg);
+    border: 1px solid var(--border-color);
+    color: var(--primary-color);
+    padding: 1.5rem;
+    border-radius: .25rem;
+    text-align: center;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.quick-action-card:hover {
+    background-color: var(--primary-color);
+    color: var(--text-light);
+    border-color: var(--primary-color);
+}

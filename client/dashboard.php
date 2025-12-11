@@ -62,7 +62,7 @@ include 'includes/client_header.php';
     <h1 class="h2">Dashboard</h1>
 </div>
 
-<div class="card bg-light text-dark p-4 mb-4">
+<div class="card p-4 mb-4">
     <h2>Welcome back, <?php echo htmlspecialchars(explode(' ', $user['FullName'])[0]); ?>!</h2>
     <p class="lead">Ready to continue your fitness journey? Here's a snapshot of your progress.</p>
     <div class="mt-2">
@@ -75,7 +75,7 @@ include 'includes/client_header.php';
     <div class="col-md-3 mb-3">
         <div class="card text-center h-100">
             <div class="card-body">
-                <div class="display-4 fw-bold text-primary"><?php echo count($upcomingBookings); ?></div>
+                <div class="display-4 fw-bold text-warning"><?php echo count($upcomingBookings); ?></div>
                 <div class="text-muted">Upcoming Classes</div>
             </div>
         </div>
@@ -83,7 +83,7 @@ include 'includes/client_header.php';
     <div class="col-md-3 mb-3">
         <div class="card text-center h-100">
             <div class="card-body">
-                <div class="display-4 fw-bold text-primary"><?php echo $workoutPlanCount; ?></div>
+                <div class="display-4 fw-bold text-warning"><?php echo $workoutPlanCount; ?></div>
                 <div class="text-muted">Saved Workouts</div>
             </div>
         </div>
@@ -91,7 +91,7 @@ include 'includes/client_header.php';
     <div class="col-md-3 mb-3">
         <div class="card text-center h-100">
             <div class="card-body">
-                <div class="display-4 fw-bold text-primary"><?php echo $bmi; ?></div>
+                <div class="display-4 fw-bold text-warning"><?php echo $bmi; ?></div>
                 <div class="text-muted"><?php echo $bmiCategory; ?></div>
             </div>
         </div>
@@ -99,7 +99,7 @@ include 'includes/client_header.php';
     <div class="col-md-3 mb-3">
         <div class="card text-center h-100">
             <div class="card-body">
-                <div class="h3 fw-bold text-primary text-capitalize">
+                <div class="h3 fw-bold text-warning text-capitalize">
                     <?php echo $membership ? htmlspecialchars($membership['Type']) : 'None'; ?>
                 </div>
                 <div class="text-muted">Membership</div>
