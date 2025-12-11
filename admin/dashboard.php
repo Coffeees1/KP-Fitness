@@ -59,7 +59,7 @@ include 'includes/admin_header.php';
             <div class="stat-icon"><i class="fas fa-users"></i></div>
             <div>
                 <div class="fs-4 fw-bold"><?php echo number_format($totalUsers); ?></div>
-                <div class="small text-muted">Total Users</div>
+                <h6>Total Users</h6>
             </div>
         </div>
     </div>
@@ -68,7 +68,7 @@ include 'includes/admin_header.php';
             <div class="stat-icon"><i class="fas fa-user-tie"></i></div>
             <div>
                 <div class="fs-4 fw-bold"><?php echo number_format($totalTrainers); ?></div>
-                <div class="small text-muted">Trainers</div>
+                <h6>Trainers</h6>
             </div>
         </div>
     </div>
@@ -77,7 +77,7 @@ include 'includes/admin_header.php';
             <div class="stat-icon"><i class="fas fa-user-friends"></i></div>
             <div>
                 <div class="fs-4 fw-bold"><?php echo number_format($totalClients); ?></div>
-                <div class="small text-muted">Clients</div>
+                <h6>Clients</h6>
             </div>
         </div>
     </div>
@@ -86,7 +86,7 @@ include 'includes/admin_header.php';
             <div class="stat-icon"><i class="fas fa-dumbbell"></i></div>
             <div>
                 <div class="fs-4 fw-bold"><?php echo number_format($totalClasses); ?></div>
-                <div class="small text-muted">Active Classes</div>
+                <h6>Active Classes</h6>
             </div>
         </div>
     </div>
@@ -95,7 +95,7 @@ include 'includes/admin_header.php';
             <div class="stat-icon"><i class="fas fa-calendar-alt"></i></div>
             <div>
                 <div class="fs-4 fw-bold"><?php echo number_format($totalSessionsThisMonth); ?></div>
-                <div class="small text-muted">Sessions This Month</div>
+                <h6>Sessions This Month</h6>
             </div>
         </div>
     </div>
@@ -104,7 +104,7 @@ include 'includes/admin_header.php';
             <div class="stat-icon"><i class="fas fa-money-bill-wave"></i></div>
             <div>
                 <div class="fs-4 fw-bold"><?php echo format_currency($monthlyRevenue); ?></div>
-                <div class="small text-muted">Revenue This Month</div>
+                <h6>Revenue This Month</h6>
             </div>
         </div>
     </div>

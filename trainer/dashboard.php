@@ -65,7 +65,7 @@ include 'includes/trainer_header.php';
         <div class="card text-center h-100">
             <div class="card-body">
                 <div class="display-4 fw-bold text-warning"><?php echo count($todaysSchedule); ?></div>
-                <div class="text-muted">Classes Today</div>
+                <h6>Classes Today</h6>
             </div>
         </div>
     </div>
@@ -73,7 +73,7 @@ include 'includes/trainer_header.php';
         <div class="card text-center h-100">
             <div class="card-body">
                 <div class="display-4 fw-bold text-warning"><?php echo $totalClientBookings; ?></div>
-                <div class="text-muted">Total Client Bookings</div>
+                <h6>Total Client Bookings</h6>
             </div>
         </div>
     </div>
@@ -81,7 +81,7 @@ include 'includes/trainer_header.php';
         <div class="card text-center h-100">
             <div class="card-body">
                 <div class="display-4 fw-bold text-warning"><?php echo $totalSessionsConducted; ?></div>
-                <div class="text-muted">Sessions Conducted</div>
+                <h6>Sessions Conducted</h6>
             </div>
         </div>
     </div>
@@ -89,7 +89,7 @@ include 'includes/trainer_header.php';
         <div class="card text-center h-100">
             <div class="card-body">
                 <div class="display-4 fw-bold text-warning">4.7 <i class="fas fa-star text-warning"></i></div>
-                <div class="text-muted">Average Rating</div>
+                <h6>Average Rating</h6>
             </div>
         </div>
     </div>

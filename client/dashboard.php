@@ -76,7 +76,7 @@ include 'includes/client_header.php';
         <div class="card text-center h-100">
             <div class="card-body">
                 <div class="display-4 fw-bold text-warning"><?php echo count($upcomingBookings); ?></div>
-                <div class="text-muted">Upcoming Classes</div>
+                <h6>Upcoming Classes</h6>
             </div>
         </div>
     </div>
@@ -84,7 +84,7 @@ include 'includes/client_header.php';
         <div class="card text-center h-100">
             <div class="card-body">
                 <div class="display-4 fw-bold text-warning"><?php echo $workoutPlanCount; ?></div>
-                <div class="text-muted">Saved Workouts</div>
+                <h6>Saved Workouts</h6>
             </div>
         </div>
     </div>
@@ -92,7 +92,7 @@ include 'includes/client_header.php';
         <div class="card text-center h-100">
             <div class="card-body">
                 <div class="display-4 fw-bold text-warning"><?php echo $bmi; ?></div>
-                <div class="text-muted"><?php echo $bmiCategory; ?></div>
+                <h6><?php echo $bmiCategory; ?></h6>
             </div>
         </div>
     </div>
@@ -102,7 +102,7 @@ include 'includes/client_header.php';
                 <div class="h3 fw-bold text-warning text-capitalize">
                     <?php echo $membership ? htmlspecialchars($membership['Type']) : 'None'; ?>
                 </div>
-                <div class="text-muted">Membership</div>
+                <h6>Membership</h6>
             </div>
         </div>
     </div>
