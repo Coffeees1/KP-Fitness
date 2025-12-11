@@ -126,7 +126,6 @@ require_once 'includes/config.php';
 
         /* Hero Section */
         .hero {
-            --hero-bg: url('https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=1600&q=80');
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -444,9 +443,9 @@ require_once 'includes/config.php';
             <a href="index.php" class="logo">KP FITNESS</a>
             <ul class="nav-links">
                 <li><a href="index.php">Home</a></li>
-                <li><a href="about.php">About</a></li>
+                <li><a href="about.php">About Us</a></li>
                 <li><a href="login.php">Classes</a></li>
-                <li><a href="about.php#pricing">Pricing</a></li>
+                <li><a href="about.php#pricing">Membership</a></li>
                 <li><a href="about.php#contact">Contact</a></li>
             </ul>
             <div class="auth-buttons">
@@ -466,8 +465,8 @@ require_once 'includes/config.php';
     <section class="hero">
         <div class="hero-bg"></div>
         <div class="hero-content fade-in-up">
-            <h1>Unlock Your Inner Strength</h1>
-            <p>Join KP Fitness and transform your fitness journey with our comprehensive class reservation system, expert trainers, and state-of-the-art facilities.</p>
+            <h1>One Day or Day One</h1>
+            <p>Start Your Journey at KP Fitness and Transform Your Body with Our Mr.Olympia Approved Equipments, Certified Expert Trainers, and State-Of-The-Art Facilities.</p>
             <div class="hero-buttons">
                 <a href="register.php" class="btn btn-primary">
                     <i class="fas fa-rocket"></i>
@@ -606,11 +605,9 @@ require_once 'includes/config.php';
                         </div>
                     </div>
                 </div>
-                <div class="about-image">
-                    <div style="background: linear-gradient(135deg, #ff6b00, #ff8533); height: 400px; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; font-weight: 600;">
-                        <i class="fas fa-dumbbell" style="font-size: 4rem; margin-bottom: 1rem;"></i>
-                        <p>Your Fitness Journey Starts Here</p>
-                    </div>
+                     <div class="about-image">
+                     <img src="https://pbs.twimg.com/media/DYqOMlrXcAA2D7W.jpg" alt="KP Fitness Team" style="width:100%; height:auto; border-radius:12px;">
+                </div>
                 </div>
             </div>
         </div>
@@ -656,9 +653,9 @@ require_once 'includes/config.php';
         window.addEventListener('scroll', () => {
             const navbar = document.querySelector('.navbar');
             if (window.scrollY > 100) {
-                navbar.style.background = 'rgba(26, 26, 26, 0.98)';
+                navbar.style.background = 'rgba(26, 26, 26, 0.53)';
             } else {
-                navbar.style.background = 'rgba(26, 26, 26, 0.95)';
+                navbar.style.background = 'rgba(26, 26, 26, 0.53)';
             }
         });
 
@@ -666,9 +663,9 @@ require_once 'includes/config.php';
         const hero = document.querySelector('.hero');
         const heroBg = document.querySelector('.hero-bg');
         const heroImages = [
-            'https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=1600&q=80',
-            'https://images.unsplash.com/photo-1579758629938-03607ccdbaba?auto=format&fit=crop&w=1600&q=80',
-            'https://images.unsplash.com/photo-1518611012118-41a5c9e5e0a6?auto=format&fit=crop&w=1600&q=80'
+            'https://i.ytimg.com/vi/VvcXOos4d-s/maxresdefault.jpg',
+            'https://i.ytimg.com/vi/CWK3tVW4jtw/maxresdefault.jpg',
+            'https://images.squarespace-cdn.com/content/v1/5632b369e4b0112829901f35/1531062533843-HD89SNYO7Q0N5MCU8U07/Little%2BMandarin%2BYoga%2BStudio%2BMelbourne%2BFlow'
         ];
 
         function setHeroImage(index) {
@@ -694,7 +691,7 @@ require_once 'includes/config.php';
         setInterval(() => {
             heroIndex = (heroIndex + 1) % heroImages.length;
             setHeroImage(heroIndex);
-        }, 7000);
+        }, 5000);
     </script>
 </body>
 </html>
