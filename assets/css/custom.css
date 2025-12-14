@@ -1,5 +1,28 @@
 /* Custom styles to complement Bootstrap */
 
+/* Force light text color for all content inside dark cards, tables, and lists */
+.card, 
+.table, 
+.list-group-item, 
+.list-group-item strong,
+.list-group-item p,
+.list-group-item small {
+    color: var(--text-light) !important; 
+}
+
+/* Ensure disabled and readonly input field text is visible */
+.form-control:disabled, 
+.form-control[readonly], 
+.form-select:disabled, 
+.form-select[readonly] {
+    color: var(--text-light) !important;
+}
+
+/* Fix for the membership cards' benefit lists which use .list-unstyled li */
+.card .list-unstyled li {
+    color: var(--text-light) !important;
+}
+
 :root {
     --primary-color: #0d1b2a; /* Dark Blue */
     --secondary-color: #f8f9fa; /* Light Gray */
