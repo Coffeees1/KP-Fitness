@@ -15,7 +15,7 @@ try {
     $bmiCategory = get_bmi_category($bmi);
     
     // Get upcoming bookings (next 5)
-    $stmt = $pdo->prepare("
+    $stmt = $pdo->prepare(query: "
         SELECT s.SessionDate, s.Time, c.ClassName 
         FROM reservations r
         JOIN sessions s ON r.SessionID = s.SessionID
@@ -169,14 +169,15 @@ include 'includes/client_header.php';
     <h1 class="h2">Dashboard</h1>
 </div>
 
-<div class="card p-4 mb-4 welcome-card">
+<div class="card p-4 mb-4">
     <h2>Welcome back, <?php echo htmlspecialchars(explode(' ', $user['FullName'])[0]); ?>!</h2>
     <p class="lead">Ready to continue your fitness journey? Here's a snapshot of your progress.</p>
     <p class="fst-italic">"<?php echo $quote; ?>"</p>
     <div class="mt-3">
         <a href="booking.php" class="btn btn-primary btn-lg">Book a Class</a>
         <a href="workout_planner.php" class="btn btn-primary btn-lg">AI Workout Planner</a>
-    </div></div>
+    </div>
+</div>
 
 <div class="row">
     <div class="col-md-3 mb-3">
@@ -206,7 +207,7 @@ include 'includes/client_header.php';
     <div class="col-md-3 mb-3">
         <div class="card text-center h-100">
             <div class="card-body">
-                <div class="h3 fw-bold text-primary text-capitalize">
+                <div class="display-4 fw-bold text-primary text-capitalize">
                     <?php echo $membership ? htmlspecialchars($membership['Type']) : 'None'; ?>
                 </div>
                 <h6>Membership</h6>
