@@ -366,7 +366,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         item.innerHTML = `
                             <div class="row align-items-center text-center text-md-start">
                                 <div class="col-md-2">
-                                    <h4 class="mb-0 fw-bold text-dark">${timeStr}</h4>
+                                    <h4 class="mb-0 fw-bold text-primary">${timeStr}</h4>
                                 </div>
                                 <div class="col-md-3">
                                     <h4 class="mb-0 text-primary text-wrap">${session.ActivityName}</h4>
