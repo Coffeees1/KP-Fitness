@@ -15,7 +15,7 @@ $endDate = $_GET['end_date'];
 
 try {
     $stmt = $pdo->prepare("
-        SELECT r.ReservationID, s.SessionDate, s.Time, s.Room, a.ClassName as ActivityName, c.CategoryName, a.DifficultyLevel, u.FullName as TrainerName
+        SELECT r.ReservationID, s.SessionDate, s.Time, s.Room, a.ClassName as ActivityName, a.Description, c.CategoryName, a.DifficultyLevel, u.FullName as TrainerName
         FROM reservations r
         JOIN sessions s ON r.SessionID = s.SessionID
         JOIN activities a ON s.ClassID = a.ClassID

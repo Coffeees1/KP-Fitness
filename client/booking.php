@@ -60,7 +60,7 @@ include 'includes/client_header.php';
         <h5 class="mb-0">My Schedule</h5>
         <div class="btn-group">
             <button class="btn btn-outline-secondary btn-sm" id="prev-week-btn"><i class="fas fa-chevron-left"></i></button>
-            <span class="btn btn-outline-secondary btn-sm disabled" id="current-week-display" style="min-width: 200px; color: #333;">...</span>
+            <span class="btn btn-light btn-sm fw-bold border" id="current-week-display" style="min-width: 200px; color: #333; cursor: default;">...</span>
             <button class="btn btn-outline-secondary btn-sm" id="next-week-btn"><i class="fas fa-chevron-right"></i></button>
         </div>
     </div>
@@ -251,6 +251,44 @@ include 'includes/client_header.php';
     </div>
 </div>
 
+<!-- Schedule Details Modal -->
+<div class="modal fade" id="scheduleDetailsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Class Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <h4 id="detail-activity" class="text-primary mb-3"></h4>
+                <div class="row mb-2">
+                    <div class="col-sm-4 fw-bold">Time:</div>
+                    <div class="col-sm-8" id="detail-time"></div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-sm-4 fw-bold">Trainer:</div>
+                    <div class="col-sm-8" id="detail-trainer"></div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-sm-4 fw-bold">Room:</div>
+                    <div class="col-sm-8" id="detail-room"></div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-sm-4 fw-bold">Category:</div>
+                    <div class="col-sm-8" id="detail-category"></div>
+                </div>
+                <div class="mt-3">
+                    <p class="fw-bold mb-1">Description:</p>
+                    <p class="text-muted" id="detail-description"></p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     const bookingModalEl = document.getElementById('bookingModal');
@@ -259,6 +297,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const ratingModal = new bootstrap.Modal(ratingModalEl);
     const paymentModal = new bootstrap.Modal(document.getElementById('paymentModal'));
     const cancelModal = new bootstrap.Modal(document.getElementById('cancelModal'));
+    const scheduleDetailsModal = new bootstrap.Modal(document.getElementById('scheduleDetailsModal'));
     
     // --- My Schedule Logic ---
     let currentWeekStart = getStartOfWeek(new Date());
@@ -316,16 +355,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     grouped[date].forEach(session => {
                         const item = document.createElement('div');
-                        item.className = 'list-group-item';
+                        item.className = 'list-group-item py-3';
+                        // Escaping logic for attributes
+                        const safeActivity = session.ActivityName.replace(/"/g, '&quot;');
+                        const safeDesc = (session.Description || 'No description').replace(/"/g, '&quot;');
+                        
                         item.innerHTML = `
-                            <div class="d-flex w-100 justify-content-between align-items-center">
-                                <div>
-                                    <h6 class="mb-1 text-primary">${session.ActivityName}</h6>
-                                    <small class="text-muted"><i class="far fa-clock me-1"></i>${session.Time}</small>
+                            <div class="row align-items-center">
+                                <div class="col-md-3">
+                                    <h5 class="mb-0 text-dark">${session.Time}</h5>
                                 </div>
-                                <div class="text-end">
-                                    <small class="d-block text-muted">Trainer: ${session.TrainerName}</small>
-                                    <small class="d-block text-muted">Room: ${session.Room || 'N/A'}</small>
+                                <div class="col-md-5">
+                                    <h5 class="mb-1 text-primary">${session.ActivityName}</h5>
+                                    <div class="text-muted"><i class="fas fa-user-tie me-1"></i>${session.TrainerName}</div>
+                                    <div class="text-muted"><i class="fas fa-map-marker-alt me-1"></i>${session.Room || 'N/A'}</div>
+                                </div>
+                                <div class="col-md-4 text-md-end mt-2 mt-md-0">
+                                    <button class="btn btn-outline-info btn-sm view-details-btn" 
+                                        data-activity="${safeActivity}"
+                                        data-time="${session.SessionDate} at ${session.Time}"
+                                        data-trainer="${session.TrainerName}"
+                                        data-room="${session.Room || 'N/A'}"
+                                        data-category="${session.CategoryName} (${session.DifficultyLevel})"
+                                        data-description="${safeDesc}">
+                                        Details
+                                    </button>
                                 </div>
                             </div>
                         `;
@@ -346,6 +400,20 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('next-week-btn').addEventListener('click', () => {
         currentWeekStart.setDate(currentWeekStart.getDate() + 7);
         updateScheduleDisplay();
+    });
+
+    // Details Button Click
+    document.addEventListener('click', function(e) {
+        if (e.target.matches('.view-details-btn')) {
+            const btn = e.target;
+            document.getElementById('detail-activity').textContent = btn.dataset.activity;
+            document.getElementById('detail-time').textContent = btn.dataset.time;
+            document.getElementById('detail-trainer').textContent = btn.dataset.trainer;
+            document.getElementById('detail-room').textContent = btn.dataset.room;
+            document.getElementById('detail-category').textContent = btn.dataset.category;
+            document.getElementById('detail-description').textContent = btn.dataset.description;
+            scheduleDetailsModal.show();
+        }
     });
 
     // Initial load
