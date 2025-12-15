@@ -41,7 +41,7 @@ $stmt = $pdo->prepare("
     JOIN sessions s ON r.SessionID = s.SessionID
     JOIN activities a ON s.ClassID = a.ClassID
     JOIN class_categories c ON a.CategoryID = c.CategoryID
-    WHERE r.UserID = ? AND CONCAT(s.SessionDate, ' ', s.Time) < NOW()
+    WHERE r.UserID = ? AND (CONCAT(s.SessionDate, ' ', s.Time) < NOW() OR r.Status != 'booked')
     ORDER BY StartTime DESC
 ");
 $stmt->execute([$userId]);
