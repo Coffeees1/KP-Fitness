@@ -129,14 +129,22 @@ include 'includes/client_header.php';
                             <tr>
                                 <td><?php echo htmlspecialchars(format_date($booking['StartTime'])); ?></td>
                                 <td><?php echo htmlspecialchars($booking['CategoryName']); ?> - <?php echo htmlspecialchars($booking['ActivityName']); ?></td>
-                                <td><span class="badge bg-<?php echo strtolower($booking['Status']) === 'booked' ? 'success' : (strtolower($booking['Status']) === 'cancelled' ? 'danger' : 'secondary'); ?>"><?php echo htmlspecialchars(ucfirst($booking['Status'])); ?></span></td>
+                                <td><span class="badge bg-<?php 
+                                    $s = strtolower($booking['Status']);
+                                    if (in_array($s, ['booked', 'attended', 'done', 'rated'])) echo 'success';
+                                    elseif (in_array($s, ['cancelled', 'absent'])) echo 'danger';
+                                    elseif ($s === 're-scheduled') echo 'info';
+                                    else echo 'secondary';
+                                ?>"><?php echo htmlspecialchars(ucfirst($booking['Status'])); ?></span></td>
                                 <td>
-                                    <?php if ($booking['Status'] === 'Done'): ?>
+                                    <?php if ($booking['Status'] === 'Attended' || $booking['Status'] === 'Done'): ?>
                                         <button class="btn btn-outline-primary btn-sm rate-btn" data-reservation-id="<?php echo $booking['ReservationID']; ?>">Rate</button>
-                                    <?php elseif ($booking['Status'] === 'cancelled'): ?>
-                                        <button class="btn btn-outline-secondary btn-sm" disabled>Re-schedule</button>
-                                    <?php else: ?>
+                                    <?php elseif ($booking['Status'] === 'Absent'): ?>
+                                        <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#bookingModal">Re-schedule</button>
+                                    <?php elseif ($booking['Status'] === 'Re-scheduled'): ?>
                                         <button class="btn btn-outline-danger btn-sm cancel-booking-btn" data-reservation-id="<?php echo $booking['ReservationID']; ?>" data-is-recurring="0">Cancel</button>
+                                    <?php else: ?>
+                                        -
                                     <?php endif; ?>
                                 </td>
                             </tr>
