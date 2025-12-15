@@ -83,7 +83,7 @@ include 'includes/client_header.php';
     </div>
     <div class="card-body">
         <div class="table-responsive">
-            <table class="table table-hover">
+            <table class="table table-hover table-light">
                 <thead class="table-light">
                     <tr><th>Date</th><th>Class</th><th>Status</th><th>Action</th></tr>
                 </thead>
@@ -368,7 +368,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     grouped[date].forEach(session => {
                         const item = document.createElement('div');
-                        item.className = 'list-group-item py-3';
+                        item.className = 'list-group-item bg-light';
                         // Escaping logic for attributes
                         const safeActivity = session.ActivityName.replace(/"/g, '&quot;');
                         const safeDesc = (session.Description || 'No description').replace(/"/g, '&quot;');
