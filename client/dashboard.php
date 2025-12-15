@@ -183,7 +183,7 @@ include 'includes/client_header.php';
     <div class="col-md-3 mb-3">
         <div class="card text-center h-100">
             <div class="card-body d-flex flex-column justify-content-between">
-                <h3 class="fw-bold text-primary mb-2"><?php echo count($upcomingBookings); ?></div>
+                <div class="display-4 fw-bold text-primary mb-2"><?php echo count($upcomingBookings); ?></div>
                 <h6 class="mt-auto">Upcoming Classes</h6>
             </div>
         </div>
@@ -191,7 +191,7 @@ include 'includes/client_header.php';
     <div class="col-md-3 mb-3">
         <div class="card text-center h-100">
             <div class="card-body d-flex flex-column justify-content-between">
-                <h3 class="fw-bold text-primary mb-2"><?php echo $workoutPlanCount; ?></div>
+                <div class="display-4 fw-bold text-primary mb-2"><?php echo $workoutPlanCount; ?></div>
                 <h6 class="mt-auto">Saved Workouts</h6>
             </div>
         </div>
@@ -199,7 +199,7 @@ include 'includes/client_header.php';
     <div class="col-md-3 mb-3">
         <div class="card text-center h-100">
             <div class="card-body d-flex flex-column justify-content-between">
-                <h3 class="fw-bold text-primary mb-2"><?php echo $bmi; ?></div>
+                <div class="display-4 fw-bold text-primary mb-2"><?php echo $bmi; ?></div>
                 <h6 class="mt-auto"><?php echo $bmiCategory; ?></h6>
             </div>
         </div>
@@ -207,16 +207,17 @@ include 'includes/client_header.php';
     <div class="col-md-3 mb-3">
         <div class="card text-center h-100">
             <div class="card-body d-flex flex-column justify-content-between">
-                <h3 class="fw-bold text-primary text-capitalize mb-2">
-                                                            <?php 
-                                                            if (!empty($membership['PlanName']) && $membership['PlanName'] === 'Unlimited Class Membership') {
-                                                                echo 'Unlimited';
-                                                            } elseif (!empty($membership['PlanName'])) {
-                                                                echo htmlspecialchars($membership['PlanName']);
-                                                            } else {
-                                                                echo 'Non-member';
-                                                            }
-                                                            ?>                </div>
+                <div class="display-4 fw-bold text-primary text-capitalize mb-2">
+                    <?php 
+                    if (!empty($membership['PlanName']) && $membership['PlanName'] === 'Unlimited Class Membership') {
+                        echo 'Unlimited';
+                    } elseif (!empty($membership['PlanName'])) {
+                        echo htmlspecialchars($membership['PlanName']);
+                    } else {
+                        echo '-';
+                    }
+                    ?>
+                </div>
                 <h6 class="mt-auto">Membership</h6>
             </div>
         </div>
