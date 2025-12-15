@@ -200,7 +200,7 @@ include 'includes/client_header.php';
         <div class="card text-center h-100">
             <div class="card-body d-flex flex-column justify-content-between">
                 <div class="display-4 fw-bold text-primary mb-2"><?php echo $bmi; ?></div>
-                <h6 class="mt-auto"><?php echo $bmiCategory; ?></h6>
+                <h6 class="mt-auto"><?php echo $bmiCategory; ?> (BMI)</h6>
             </div>
         </div>
     </div>
@@ -211,6 +211,8 @@ include 'includes/client_header.php';
                     <?php 
                     if (!empty($membership['PlanName']) && $membership['PlanName'] === 'Unlimited Class Membership') {
                         echo 'Unlimited';
+                    } elseif (!empty($membership['PlanName']) && $membership['PlanName'] === 'Annual Class Membership') {
+                        echo 'Annual';
                     } elseif (!empty($membership['PlanName'])) {
                         echo htmlspecialchars($membership['PlanName']);
                     } else {
