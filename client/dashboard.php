@@ -252,7 +252,7 @@ include 'includes/client_header.php';
                 Health Stats
             </div>
             <div class="card-body">
-                <ul class="list-group list-group-flush">
+                <ul class="list-group list-group-flush" id="health-stats-list">
                     <li class="list-group-item d-flex justify-content-between"><strong>Height:</strong> <?php echo htmlspecialchars($user['Height'] ?? 'N/A'); ?> cm</li>
                     <li class="list-group-item d-flex justify-content-between"><strong>Weight:</strong> <?php echo htmlspecialchars($user['Weight'] ?? 'N/A'); ?> kg</li>
                     <li class="list-group-item d-flex justify-content-between"><strong>BMI:</strong> <?php echo $bmi; ?> (<?php echo $bmiCategory; ?>)</li>
@@ -321,7 +321,7 @@ document.addEventListener('DOMContentLoaded', () => {
     updateStatsBtn.addEventListener('click', () => {
         // Pre-fill values from the display logic
         // We look for the text immediately following the strong tag in the list items
-        const listItems = document.querySelectorAll('.card-body ul.list-group li.list-group-item');
+        const listItems = document.querySelectorAll('#health-stats-list li.list-group-item');
         
         let currentHeight = '';
         let currentWeight = '';
@@ -360,7 +360,7 @@ document.addEventListener('DOMContentLoaded', () => {
         .then(data => {
             if (data.success) {
                 // Update UI
-                const listItems = document.querySelectorAll('.card-body ul.list-group li.list-group-item');
+                const listItems = document.querySelectorAll('#health-stats-list li.list-group-item');
                 const newHeight = formData.get('height');
                 const newWeight = formData.get('weight');
                 
