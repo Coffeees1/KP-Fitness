@@ -208,16 +208,15 @@ include 'includes/client_header.php';
         <div class="card text-center h-100">
             <div class="card-body d-flex flex-column justify-content-between">
                 <div class="display-4 fw-bold text-primary text-capitalize mb-2">
-                    <?php 
-                    if ($membership && $membership['PlanName'] === 'Unlimited Class Membership') {
-                        echo 'Unlimited';
-                    } elseif ($membership) {
-                        echo htmlspecialchars($membership['PlanName']);
-                    } else {
-                        echo 'None';
-                    }
-                    ?>
-                </div>
+                                        <?php
+                                        if ($membership && $membership['PlanName'] === 'Unlimited Class Membership') {
+                                            echo 'Unlimited';
+                                        } elseif ($membership) {
+                                            echo htmlspecialchars($membership['PlanName']);
+                                        } else {
+                                            echo 'Non-member'; // Changed from 'None'
+                                        }
+                                        ?>                </div>
                 <h6 class="mt-auto">Membership</h6>
             </div>
         </div>
