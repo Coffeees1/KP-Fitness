@@ -742,6 +742,7 @@ document.addEventListener('DOMContentLoaded', () => {
     border-radius: 12px;
     box-shadow: 0 4px 15px rgba(0,0,0,0.05);
     padding: 15px;
+    border: 1px solid #ccc; /* Darker border added */
 }
 #calendar-container .vanilla-calendar-day__btn_selected {
     background-color: #ff8c00 !important;
@@ -770,6 +771,7 @@ document.addEventListener('DOMContentLoaded', () => {
     box-shadow: 0 2px 10px rgba(0,0,0,0.05);
     border-left: 5px solid #ff8c00; /* Orange accent */
     margin-bottom: 20px;
+    border: 1px solid #ccc; /* Darker border added */
 }
 .filter-card .form-label {
     font-weight: 600;
