@@ -1,5 +1,6 @@
 <?php
 require_once '../includes/config.php';
+require_client();
 
 header('Content-Type: application/json');
 
@@ -9,17 +10,33 @@ if (!isset($_GET['date'])) {
 }
 
 $date = $_GET['date'];
+$categoryId = $_GET['category_id'] ?? null;
+$difficulty = $_GET['difficulty'] ?? null;
 
 try {
-    $stmt = $pdo->prepare("
-        SELECT s.SessionID, s.SessionDate, s.Time, c.ClassName, c.MaxCapacity, u.FullName as TrainerName, s.CurrentBookings
+    $sql = "
+        SELECT s.SessionID, s.SessionDate, s.Time, a.ClassName as ActivityName, a.MaxCapacity, u.FullName as TrainerName, s.CurrentBookings
         FROM sessions s
-        JOIN classes c ON s.ClassID = c.ClassID
+        JOIN activities a ON s.ClassID = a.ClassID
         JOIN users u ON s.TrainerID = u.UserID
-        WHERE s.SessionDate = ? AND s.Status = 'scheduled'
-        ORDER BY s.Time
-    ");
-    $stmt->execute([$date]);
+        WHERE s.SessionDate = :date AND s.Status = 'scheduled'
+    ";
+    $params = [':date' => $date];
+
+    if (!empty($categoryId)) {
+        $sql .= " AND a.CategoryID = :category_id";
+        $params[':category_id'] = $categoryId;
+    }
+
+    if (!empty($difficulty)) {
+        $sql .= " AND a.DifficultyLevel = :difficulty";
+        $params[':difficulty'] = $difficulty;
+    }
+
+    $sql .= " ORDER BY s.Time";
+
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($params);
     $sessions = $stmt->fetchAll(PDO::FETCH_ASSOC);
     echo json_encode($sessions);
 } catch (PDOException $e) {
