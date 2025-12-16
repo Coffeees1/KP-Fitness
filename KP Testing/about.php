@@ -95,29 +95,48 @@ include 'includes/header.php';
     <p><strong>Vision:</strong> To become the leading fitness destination that seamlessly integrates technology, expertise, and community to create transformative fitness experiences for people of all fitness levels.</p>
 </section>
 
-<section class="content-section">
     <h2>Meet Our Expert Team</h2>
     <div class="team-grid">
-        <div class="team-card">
-            <div class="team-avatar">JD</div>
-            <h4>John Doe</h4>
-            <p>Head Trainer</p>
-        </div>
-        <div class="team-card">
-            <div class="team-avatar">SM</div>
-            <h4>Sarah Miller</h4>
-            <p>Yoga Specialist</p>
-        </div>
-        <div class="team-card">
-            <div class="team-avatar">MJ</div>
-            <h4>Mike Johnson</h4>
-            <p>HIIT Expert</p>
-        </div>
-        <div class="team-card">
-            <div class="team-avatar">AL</div>
-            <h4>Amy Lee</h4>
-            <p>Pilates Instructor</p>
-        </div>
+        <?php
+        try {
+            $stmt = $pdo->prepare("SELECT FullName, Specialization, Gender, ProfilePicture FROM users WHERE Role = 'trainer' AND IsActive = 1");
+            $stmt->execute();
+            $trainers = $stmt->fetchAll();
+
+            if (count($trainers) > 0) {
+                foreach ($trainers as $trainer) {
+                    $initials = strtoupper(substr($trainer['FullName'], 0, 1));
+                    $specialization = !empty($trainer['Specialization']) ? htmlspecialchars($trainer['Specialization']) : 'Fitness Coach';
+                    $genderIcon = '';
+                    if ($trainer['Gender'] === 'Male') {
+                        $genderIcon = '<i class="fas fa-mars text-primary ms-2" title="Male"></i>';
+                    } elseif ($trainer['Gender'] === 'Female') {
+                        $genderIcon = '<i class="fas fa-venus text-danger ms-2" title="Female"></i>';
+                    }
+                    
+                    ?>
+                    <div class="team-card h-100">
+                        <?php if (!empty($trainer['ProfilePicture']) && file_exists('uploads/profile_pictures/' . basename($trainer['ProfilePicture']))): ?>
+                            <img src="uploads/profile_pictures/<?php echo basename($trainer['ProfilePicture']); ?>" alt="<?php echo htmlspecialchars($trainer['FullName']); ?>" class="team-avatar mb-3" style="width: 120px; height: 120px; object-fit: cover; border-radius: 50%;">
+                        <?php else: ?>
+                            <div class="team-avatar mb-3"><?php echo $initials; ?></div>
+                        <?php endif; ?>
+                        
+                        <h4 class="mb-1">
+                            <?php echo htmlspecialchars($trainer['FullName']); ?>
+                            <?php echo $genderIcon; ?>
+                        </h4>
+                        <p class="badge bg-primary text-white mb-0"><?php echo $specialization; ?></p>
+                    </div>
+                    <?php
+                }
+            } else {
+                echo '<p class="text-center w-100 text-muted">No trainers currently listed. Check back soon!</p>';
+            }
+        } catch (PDOException $e) {
+            echo '<p class="text-danger">Error loading team: ' . $e->getMessage() . '</p>';
+        }
+        ?>
     </div>
 </section>
 

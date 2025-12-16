@@ -71,7 +71,7 @@ include 'includes/header.php';
     <div class="col-md-6 col-lg-5 col-xl-4">
         <div class="card mt-5">
             <div class="card-body p-4">
-                <h1 class="card-title text-center text-warning h3 mb-4">Member Login</h1>
+                <h1 class="card-title text-center mb-4" style="color:#ff6b00;font-size:1.75rem;">Member Login</h1>
 
                 <?php if (!empty($errors)): ?>
                     <div class="alert alert-danger">
@@ -99,7 +99,9 @@ include 'includes/header.php';
                 </form>
                 
                 <div class="text-center mt-3">
-                    <p>Don't have an account? <a href="register.php" class="text-warning">Register here</a></p>
+                    <p class="text-center mt-3 mb-0">
+                     Don't have an account? <a href="register.php" style="color:#ff6b00;">Register here</a>
+                     </p>
                 </div>
             </div>
         </div>
