@@ -11,7 +11,7 @@ try {
     $stmt = $pdo->prepare("
         SELECT s.SessionID, s.SessionDate, s.Time, c.ClassName, c.DifficultyLevel, s.Room, s.Status
         FROM sessions s
-        JOIN classes c ON s.ClassID = c.ClassID
+        JOIN activities c ON s.ClassID = c.ClassID
         WHERE s.TrainerID = ? AND s.SessionDate < CURDATE()
         ORDER BY s.SessionDate DESC, s.Time DESC
     ");
@@ -24,7 +24,7 @@ try {
             SELECT u.FullName, r.Status AS BookingStatus, a.Status AS AttendanceStatus, a.Notes
             FROM reservations r
             JOIN users u ON r.UserID = u.UserID
-            LEFT JOIN attendance a ON r.ReservationID = a.ReservationID -- Assuming ReservationID in attendance now
+            LEFT JOIN attendance a ON r.UserID = a.UserID AND r.SessionID = a.SessionID
             WHERE r.SessionID = ?
             ORDER BY u.FullName
         ");
