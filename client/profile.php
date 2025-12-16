@@ -205,7 +205,7 @@ include 'includes/client_header.php';
 
                 <div class="mb-3">
                     <label for="phone" class="form-label fw-bold">Contact</label>
-                    <input type="text" class="form-control" id="phone" name="phone" value="<?php echo htmlspecialchars($user['Phone'] ?? ''); ?>" placeholder="e.g. 01X-XXX XXXX" readonly>
+                    <input type="text" class="form-control" id="phone" name="phone" value="<?php echo htmlspecialchars(format_phone_display($user['Phone'] ?? '')); ?>" placeholder="e.g. 01X-XXX XXXX" readonly>
                     <div id="phone-error" class="invalid-feedback d-none">
                         <i class="fas fa-exclamation-circle"></i> Invalid format. Use: 01X-XXX XXXX (10 digits) or 01X-XXXX XXXX (11 digits)
                     </div>

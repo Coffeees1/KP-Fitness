@@ -68,7 +68,7 @@ try {
         }
 
         // Get details of the session being booked
-        $stmt = $pdo->prepare("SELECT CONCAT(s.SessionDate, ' ', s.Time) as StartTime, a.Duration, a.Price, s.ClassID, s.Time, a.ClassName FROM sessions s JOIN activities a ON s.ClassID = a.ClassID WHERE s.SessionID = ?");
+        $stmt = $pdo->prepare("SELECT CONCAT(s.SessionDate, ' ', s.Time) as StartTime, a.Duration, a.Price, s.ClassID, s.Time, s.TrainerID, a.ClassName FROM sessions s JOIN activities a ON s.ClassID = a.ClassID WHERE s.SessionID = ?");
         $stmt->execute([$sessionId]);
         $newSession = $stmt->fetch();
 
@@ -159,6 +159,12 @@ try {
                 $timeStr = format_time($newSession['Time']);
                 create_notification($userId, 'Class Booked', "You have successfully booked {$newSession['ClassName']} on {$dateStr} at {$timeStr}.", 'success');
 
+                // Notify Trainer
+                $stmt = $pdo->prepare("SELECT FullName FROM users WHERE UserID = ?");
+                $stmt->execute([$userId]);
+                $clientName = $stmt->fetchColumn();
+                create_notification($newSession['TrainerID'], 'New Booking', "$clientName has booked your {$newSession['ClassName']} class on {$dateStr} at {$timeStr}.", 'success');
+
                 if ($repeatWeekly) {
                     $response['message'] .= ' Weekly repeat booking for 2 weeks created.';
                     $originalSessionDate = new DateTime($newSessionStart->format('Y-m-d'));
@@ -204,7 +210,7 @@ try {
         // Get reservation details
         $stmt = $pdo->prepare("
             SELECT r.ReservationID, r.SessionID, r.recurrence_id, r.is_recurring, r.PaidAmount, 
-                   CONCAT(s.SessionDate, ' ', s.Time) as SessionStart, a.ClassName
+                   CONCAT(s.SessionDate, ' ', s.Time) as SessionStart, a.ClassName, s.TrainerID
             FROM reservations r
             JOIN sessions s ON r.SessionID = s.SessionID
             JOIN activities a ON s.ClassID = a.ClassID
@@ -217,7 +223,7 @@ try {
             $reservationsToCancel = [];
             if ($reservation['is_recurring'] && $cancelScope === 'all') {
                 $stmt = $pdo->prepare(
-                    "SELECT r.ReservationID, r.SessionID, r.PaidAmount, CONCAT(s.SessionDate, ' ', s.Time) as SessionStart, a.ClassName
+                    "SELECT r.ReservationID, r.SessionID, r.PaidAmount, CONCAT(s.SessionDate, ' ', s.Time) as SessionStart, a.ClassName, s.TrainerID
                      FROM reservations r
                      JOIN sessions s ON r.SessionID = s.SessionID
                      JOIN activities a ON s.ClassID = a.ClassID
@@ -231,6 +237,11 @@ try {
 
             $refundCount = 0;
             $noRefundCount = 0;
+            
+            // Get Client Name once
+            $stmt = $pdo->prepare("SELECT FullName FROM users WHERE UserID = ?");
+            $stmt->execute([$userId]);
+            $clientName = $stmt->fetchColumn();
 
             foreach ($reservationsToCancel as $res) {
                 // Check for Refund Eligibility (48 hours)
@@ -260,6 +271,10 @@ try {
                 $stmt->execute([$res['ReservationID']]);
                 $stmt = $pdo->prepare("UPDATE sessions SET CurrentBookings = GREATEST(0, CurrentBookings - 1) WHERE SessionID = ?");
                 $stmt->execute([$res['SessionID']]);
+                
+                // Notify Trainer
+                $classTime = format_date(date('Y-m-d', strtotime($res['SessionStart']))) . ' at ' . format_time(date('H:i:s', strtotime($res['SessionStart'])));
+                create_notification($res['TrainerID'], 'Booking Cancelled', "$clientName has cancelled their booking for {$res['ClassName']} on $classTime.", 'warning');
             }
             
             $msg = 'Booking cancelled.';
@@ -294,9 +309,10 @@ try {
 
         // Get reservation details
         $stmt = $pdo->prepare(
-            "SELECT r.UserID, s.TrainerID 
+            "SELECT r.UserID, s.TrainerID, a.ClassName
              FROM reservations r
              JOIN sessions s ON r.SessionID = s.SessionID
+             JOIN activities a ON s.ClassID = a.ClassID
              WHERE r.ReservationID = ? AND r.UserID = ? AND r.Status = 'Done'"
         );
         $stmt->execute([$reservationId, $userId]);
@@ -310,6 +326,17 @@ try {
             // Update reservation status to 'Rated'
             $stmt = $pdo->prepare("UPDATE reservations SET Status = 'Rated' WHERE ReservationID = ?");
             $stmt->execute([$reservationId]);
+            
+            // Notify Trainer
+            $stmt = $pdo->prepare("SELECT FullName FROM users WHERE UserID = ?");
+            $stmt->execute([$userId]);
+            $clientName = $stmt->fetchColumn();
+            
+            $ratingMsg = "$clientName rated your {$reservation['ClassName']} class $ratingScore/5 stars.";
+            if (!empty($comment)) {
+                $ratingMsg .= " Comment: \"$comment\"";
+            }
+            create_notification($reservation['TrainerID'], 'New Rating', $ratingMsg, 'success');
             
             $pdo->commit();
             $response = ['success' => true, 'message' => 'Thank you for your feedback!'];

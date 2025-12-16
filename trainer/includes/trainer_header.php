@@ -23,29 +23,43 @@ $current_page = basename($_SERVER['PHP_SELF']);
 <body class="dashboard-layout">
 
 <div class="d-flex flex-column flex-shrink-0 p-3 text-white bg-dark sidebar">
-    <a href="<?php echo SITE_URL . '/trainer/dashboard.php'; ?>" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
+    <a href="dashboard.php" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
         <i class="fas fa-user-shield fs-4 me-2"></i>
         <span class="fs-4">Trainer</span>
     </a>
     <hr>
     <ul class="nav nav-pills flex-column mb-auto">
         <li class="nav-item">
-            <a href="dashboard.php" class="nav-link text-white <?= $current_page == 'dashboard.php' ? 'active' : '' ?>">
+            <a href="dashboard.php" class="nav-link <?= $current_page == 'dashboard.php' ? 'active' : '' ?>">
                 <i class="fas fa-tachometer-alt me-2"></i> <span>Dashboard</span>
             </a>
         </li>
         <li>
-            <a href="schedule.php" class="nav-link text-white <?= $current_page == 'schedule.php' ? 'active' : '' ?>">
+            <a href="schedule.php" class="nav-link <?= $current_page == 'schedule.php' ? 'active' : '' ?>">
                 <i class="fas fa-calendar-alt me-2"></i> <span>My Schedule</span>
             </a>
         </li>
         <li>
-            <a href="attendance.php" class="nav-link text-white <?= $current_page == 'attendance.php' ? 'active' : '' ?>">
+            <a href="attendance.php" class="nav-link <?= $current_page == 'attendance.php' ? 'active' : '' ?>">
                 <i class="fas fa-clipboard-check me-2"></i> <span>Attendance</span>
             </a>
         </li>
         <li>
-            <a href="profile.php" class="nav-link text-white <?= $current_page == 'profile.php' ? 'active' : '' ?>">
+            <?php 
+            $unreadCount = 0;
+            if (isset($_SESSION['UserID'])) {
+                $unreadCount = get_unread_notifications_count($_SESSION['UserID']); 
+            }
+            ?>
+            <a href="notifications.php" class="nav-link <?= $current_page == 'notifications.php' ? 'active' : '' ?> d-flex justify-content-between align-items-center">
+                <div><i class="fas fa-bell me-2"></i> <span>Notifications</span></div>
+                <?php if ($unreadCount > 0): ?>
+                    <span class="badge bg-danger rounded-pill"><?php echo $unreadCount; ?></span>
+                <?php endif; ?>
+            </a>
+        </li>
+        <li>
+            <a href="profile.php" class="nav-link <?= $current_page == 'profile.php' ? 'active' : '' ?>">
                 <i class="fas fa-user-edit me-2"></i> <span>My Profile</span>
             </a>
         </li>
@@ -54,12 +68,12 @@ $current_page = basename($_SERVER['PHP_SELF']);
     <div class="sidebar-footer">
         <ul class="nav nav-pills flex-column">
             <li class="nav-item">
-                <a href="../index.php" class="nav-link text-white" target="_blank">
+                <a href="../index.php" class="nav-link">
                     <i class="fas fa-home me-2"></i> <span>View Main Site</span>
                 </a>
             </li>
             <li class="nav-item">
-                <a href="../logout.php" class="nav-link text-white">
+                <a href="../logout.php" class="nav-link">
                     <i class="fas fa-sign-out-alt me-2"></i> <span>Sign out</span>
                 </a>
             </li>

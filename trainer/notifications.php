@@ -1,7 +1,7 @@
 <?php
 define('PAGE_TITLE', 'Notifications');
 require_once '../includes/config.php';
-require_client();
+require_trainer();
 
 $userId = $_SESSION['UserID'];
 
@@ -20,7 +20,7 @@ $stmt = $pdo->prepare("SELECT * FROM notifications WHERE UserID = ? ORDER BY Cre
 $stmt->execute([$userId]);
 $notifications = $stmt->fetchAll();
 
-include 'includes/client_header.php';
+include 'includes/trainer_header.php';
 ?>
 <style>
     /* Custom hover effect for notifications */
@@ -30,6 +30,20 @@ include 'includes/client_header.php';
     }
     .list-group-item-action:hover .text-muted {
         color: #ccc !important; /* Ensure secondary text is light gray */
+    }
+    
+    /* Dark mode adjustments for trainer module */
+    .list-group-item {
+        background-color: #2b2b2b;
+        border-color: #444;
+        color: #fff;
+    }
+    .list-group-item.bg-light.unread {
+        background-color: #333 !important; /* Lighter dark for unread */
+        border-left: 4px solid #ff6b00;
+    }
+    .text-muted {
+        color: #b0b0b0 !important;
     }
 </style>
 
@@ -50,16 +64,18 @@ include 'includes/client_header.php';
     <div class="btn-group" role="group" aria-label="Notification Filters">
         <button type="button" class="btn btn-outline-secondary active" onclick="filterNotifications('all', this)">All</button>
         <button type="button" class="btn btn-outline-secondary" onclick="filterNotifications('booking', this)">Bookings</button>
+        <button type="button" class="btn btn-outline-secondary" onclick="filterNotifications('cancellation', this)">Cancellations</button>
+        <button type="button" class="btn btn-outline-secondary" onclick="filterNotifications('rating', this)">Ratings</button>
         <button type="button" class="btn btn-outline-secondary" onclick="filterNotifications('system', this)">System</button>
     </div>
 </div>
 
 <div class="row">
     <div class="col-md-12">
-        <div class="card">
+        <div class="card bg-dark border-secondary">
             <div class="list-group list-group-flush" id="notificationList">
                 <?php if (empty($notifications)): ?>
-                    <div class="list-group-item text-center p-5 text-muted">
+                    <div class="list-group-item text-center p-5 text-muted bg-dark border-0">
                         <i class="fas fa-bell-slash fa-3x mb-3"></i>
                         <p>You have no notifications at the moment.</p>
                     </div>
@@ -70,20 +86,29 @@ include 'includes/client_header.php';
                             $color = 'primary';
                             $link = ''; // Default no link
                             $category = 'system'; // Default category
-
-                            $titleLower = strtolower($notif['Title']);
-                            if (strpos($titleLower, 'booking') !== false || strpos($titleLower, 'booked') !== false || strpos($titleLower, 'recurring') !== false || strpos($titleLower, 'cancell') !== false) {
-                                $category = 'booking';
-                            }
                             
+                            $titleLower = strtolower($notif['Title']);
+                            if (strpos($titleLower, 'booking') !== false || strpos($titleLower, 'booked') !== false) {
+                                if (strpos($titleLower, 'cancel') !== false) {
+                                    $category = 'cancellation';
+                                } else {
+                                    $category = 'booking';
+                                }
+                            } elseif (strpos($titleLower, 'rating') !== false) {
+                                $category = 'rating';
+                            }
+
                             switch($notif['Type']) {
                                 case 'success': $icon = 'check-circle'; $color = 'success'; break;
                                 case 'warning': $icon = 'exclamation-triangle'; $color = 'warning'; break;
                                 case 'error': $icon = 'times-circle'; $color = 'danger'; break;
                             }
                             
-                            if ($notif['Title'] === 'Action Required: Complete Profile') {
-                                $link = 'profile.php';
+                            // Example logic for linking specific notifications (can be expanded)
+                            if (strpos($notif['Title'], 'New Booking') !== false) {
+                                $link = 'schedule.php';
+                            } elseif (strpos($notif['Title'], 'Cancellation') !== false) {
+                                $link = 'schedule.php';
                             }
                         ?>
                         <div class="list-group-item list-group-item-action notification-item <?php echo !$notif['IsRead'] ? 'bg-light unread' : ''; ?>" 
@@ -97,7 +122,7 @@ include 'includes/client_header.php';
                                         <i class="fas fa-<?php echo $icon; ?> fa-2x"></i>
                                     </div>
                                     <div>
-                                        <h5 class="mb-1 <?php echo !$notif['IsRead'] ? 'fw-bold' : ''; ?> title-text"><?php echo htmlspecialchars($notif['Title']); ?></h5>
+                                        <h5 class="mb-1 <?php echo !$notif['IsRead'] ? 'fw-bold' : ''; ?> title-text text-white"><?php echo htmlspecialchars($notif['Title']); ?></h5>
                                         <p class="mb-1 text-muted"><?php echo htmlspecialchars($notif['Message']); ?></p>
                                     </div>
                                 </div>
@@ -129,7 +154,9 @@ function filterNotifications(category, btn) {
 
 document.addEventListener('DOMContentLoaded', () => {
     const notifications = document.querySelectorAll('.notification-item');
-    const badge = document.querySelector('.sidebar .badge'); // Assuming sidebar badge has .badge class
+    // For trainer header, badge might be in sidebar or navbar. 
+    // We'll try to find it generically.
+    const badge = document.querySelector('.nav-link .badge') || document.querySelector('.sidebar .badge');
 
     notifications.forEach(item => {
         item.addEventListener('click', function() {
@@ -177,4 +204,4 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 
-<?php include 'includes/client_footer.php'; ?>
+<?php include 'includes/trainer_footer.php'; ?>

@@ -77,7 +77,37 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Real-time validation removal (optional UX improvement)
     if (phoneInput) {
-        // ... (phone input logic remains same) ...
+        phoneInput.addEventListener('input', function(e) {
+            let value = e.target.value;
+            let cleanValue = value.replace(/\D/g, ''); // Remove all non-digits
+
+            let formattedValue = '';
+            if (cleanValue.startsWith('01')) {
+                if (cleanValue.length > 3 && cleanValue.length <= 7) { // 01X-XXX
+                    formattedValue = cleanValue.substring(0, 3) + '-' + cleanValue.substring(3);
+                } else if (cleanValue.length > 7 && cleanValue.length <= 11) { // 01X-XXX XXXX or 01X-XXXX XXXX
+                    if (cleanValue.length === 10) { // e.g., 012-345 6789
+                        formattedValue = cleanValue.substring(0, 3) + '-' + cleanValue.substring(3, 6) + ' ' + cleanValue.substring(6, 10);
+                    } else if (cleanValue.length === 11) { // e.g., 012-3456 7890
+                        formattedValue = cleanValue.substring(0, 3) + '-' + cleanValue.substring(3, 7) + ' ' + cleanValue.substring(7, 11);
+                    } else {
+                        formattedValue = cleanValue;
+                    }
+                } else {
+                    formattedValue = cleanValue;
+                }
+            } else {
+                formattedValue = cleanValue;
+            }
+
+            e.target.value = formattedValue;
+
+            // Remove validation styling on input
+            if (phoneInput.classList.contains('is-invalid')) {
+                phoneInput.classList.remove('is-invalid');
+                if (phoneError) phoneError.classList.add('d-none');
+            }
+        });
     }
 
     // Password Visibility Toggle

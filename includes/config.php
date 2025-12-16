@@ -316,4 +316,80 @@ if (is_logged_in()) {
     check_membership_expiry();
 }
 
+/**
+ * Checks if a session is currently "live" (active).
+ * A session is live from 15 minutes before start time until 90 minutes after start time.
+ * @param string $date YYYY-MM-DD
+ * @param string $time HH:MM:SS
+ * @return bool
+ */
+function is_session_live($date, $time) {
+    $sessionStart = strtotime("$date $time");
+    $now = time();
+    // Live window: 15 mins before to 90 mins after (assuming avg class is 45-60 mins)
+    $windowStart = $sessionStart - (15 * 60); 
+    $windowEnd = $sessionStart + (90 * 60);
+
+    return ($now >= $windowStart && $now <= $windowEnd);
+}
+
+/**
+ * Retrieves the existing Session Code or generates a new one if it doesn't exist.
+ * @param int $sessionId
+ * @param PDO $pdo
+ * @return string The session code
+ */
+function get_or_create_session_code($sessionId, $pdo) {
+    // Check existing
+    $stmt = $pdo->prepare("SELECT SessionCode FROM sessions WHERE SessionID = ?");
+    $stmt->execute([$sessionId]);
+    $result = $stmt->fetch();
+    
+    if ($result && !empty($result['SessionCode'])) {
+        return $result['SessionCode'];
+    }
+    
+    // Generate new code (6 chars, uppercase alphanumeric)
+    $chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    $code = '';
+    for ($i = 0; $i < 6; $i++) {
+        $code .= $chars[rand(0, strlen($chars) - 1)];
+    }
+    
+    // Save to DB
+    $update = $pdo->prepare("UPDATE sessions SET SessionCode = ? WHERE SessionID = ?");
+    $update->execute([$code, $sessionId]);
+    
+    return $code;
+}
+
+/**
+ * Formats a raw phone number string for display in the Malaysia 01X-XXX XXXX or 01X-XXXX XXXX format.
+ * It first cleans the number by removing non-digits, then applies the specific formatting.
+ *
+ * @param string|null $rawPhone The raw phone number string from the database.
+ * @return string The formatted phone number, or an empty string if input is null/empty.
+ */
+function format_phone_display(?string $rawPhone): string {
+    if (empty($rawPhone)) {
+        return '';
+    }
+
+    // Remove all non-digit characters
+    $cleanPhone = preg_replace('/\D/', '', $rawPhone);
+
+    // Apply formatting based on length
+    // Malaysian mobile numbers typically start with 01 and are 9-10 digits long after '0'.
+    // So total 10 or 11 digits.
+    if (strlen($cleanPhone) == 10 && substr($cleanPhone, 0, 2) === '01') { // e.g., 0123456789 -> 012-345 6789
+        return substr($cleanPhone, 0, 3) . '-' . substr($cleanPhone, 3, 3) . ' ' . substr($cleanPhone, 6, 4);
+    } elseif (strlen($cleanPhone) == 11 && substr($cleanPhone, 0, 2) === '01') { // e.g., 01234567890 -> 012-3456 7890
+        return substr($cleanPhone, 0, 3) . '-' . substr($cleanPhone, 3, 4) . ' ' . substr($cleanPhone, 7, 4);
+    }
+    
+    // If it doesn't match typical Malaysian mobile, return cleaned or original (decide based on strictness)
+    // For now, return the cleaned number if it doesn't fit the expected format to avoid misformatting.
+    return $rawPhone; // Fallback to original if not matching specific format
+}
+
 ?>
