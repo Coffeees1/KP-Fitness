@@ -22,8 +22,12 @@ $userId = $_SESSION['UserID'];
 $height = isset($_POST['height']) ? intval($_POST['height']) : null;
 $weight = isset($_POST['weight']) ? intval($_POST['weight']) : null;
 
-if ($height <= 0 || $weight <= 0) {
-    echo json_encode(['success' => false, 'message' => 'Please provide valid positive numbers for height and weight.']);
+if ($height < 50 || $height > 300) {
+    echo json_encode(['success' => false, 'message' => 'Height must be between 50cm and 300cm.']);
+    exit;
+}
+if ($weight < 20 || $weight > 500) {
+    echo json_encode(['success' => false, 'message' => 'Weight must be between 20kg and 500kg.']);
     exit;
 }
 

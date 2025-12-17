@@ -18,6 +18,35 @@ if (!isset($_POST['csrf_token'])) {
 
 validate_csrf_token($_POST['csrf_token']);
 
+// Helper function defined at the top scope
+function createBooking($pdo, $userId, $sessionId, $isRecurring, $recurrenceId, $parentReservationId, $paidAmount) {
+    $stmt = $pdo->prepare("SELECT CurrentBookings, (SELECT MaxCapacity FROM activities a WHERE a.ClassID = s.ClassID) as MaxCapacity FROM sessions s WHERE s.SessionID = ? FOR UPDATE");
+    $stmt->execute([$sessionId]);
+    $session = $stmt->fetch();
+
+    if ($session['CurrentBookings'] >= $session['MaxCapacity']) {
+        throw new Exception('This class is already full.');
+    }
+
+    $stmt = $pdo->prepare("SELECT ReservationID FROM reservations WHERE UserID = ? AND SessionID = ? AND Status = 'booked'");
+    $stmt->execute([$userId, $sessionId]);
+    if ($stmt->fetch()) {
+        throw new Exception('You have already booked this session.');
+    }
+
+    // Ensure is_recurring is integer 0 or 1
+    $isRecurringInt = $isRecurring ? 1 : 0;
+
+    $stmt = $pdo->prepare("INSERT INTO reservations (UserID, SessionID, Status, PaidAmount, is_recurring, recurrence_id, parent_reservation_id) VALUES (?, ?, 'booked', ?, ?, ?, ?)");
+    $stmt->execute([$userId, $sessionId, $paidAmount, $isRecurringInt, $recurrenceId, $parentReservationId]);
+    $newReservationId = $pdo->lastInsertId();
+    
+    $stmt = $pdo->prepare("UPDATE sessions SET CurrentBookings = CurrentBookings + 1 WHERE SessionID = ?");
+    $stmt->execute([$sessionId]);
+
+    return $newReservationId;
+}
+
 $action = $_POST['action'] ?? null;
 $userId = $_SESSION['UserID'];
 $response = [];
@@ -25,7 +54,7 @@ $response = [];
 try {
     if ($action === 'book') {
         $sessionId = intval($_POST['sessionId']);
-        $repeatWeekly = isset($_POST['repeat_weekly']) && $_POST['repeat_weekly'] == 'true';
+        $repeatWeekly = isset($_POST['repeat_weekly']) && $_POST['repeat_weekly'] === 'true';
         
         // Check for active membership first
         $stmt = $pdo->prepare("SELECT u.MembershipID, m.PlanName FROM users u LEFT JOIN membership m ON u.MembershipID = m.MembershipID WHERE u.UserID = ?");
@@ -42,7 +71,7 @@ try {
             $dates = $stmt->fetch();
             
             if ($dates) {
-                $stmt = $pdo->prepare("
+                $stmt = $pdo->prepare(" 
                     SELECT COUNT(*) 
                     FROM reservations r 
                     JOIN sessions s ON r.SessionID = s.SessionID 
@@ -59,7 +88,7 @@ try {
             }
         }
 
-        $paymentConfirmed = isset($_POST['payment_confirmed']) && $_POST['payment_confirmed'] == 'true';
+        $paymentConfirmed = isset($_POST['payment_confirmed']) && $_POST['payment_confirmed'] === 'true';
 
         if ($repeatWeekly && !$isPremiumMember) {
             $response = ['success' => false, 'message' => 'Weekly repeat bookings are only available for premium members.'];
@@ -80,9 +109,17 @@ try {
 
         $newSessionStart = new DateTime($newSession['StartTime']);
         $newSessionEnd = (clone $newSessionStart)->add(new DateInterval('PT' . $newSession['Duration'] . 'M'));
+
+        // Prevent booking past sessions
+        $now = new DateTime();
+        if ($newSessionStart < $now) {
+            $response = ['success' => false, 'message' => 'Cannot book a session that has already started or passed.'];
+            echo json_encode($response);
+            exit;
+        }
         
         // Time collision check
-        $stmt = $pdo->prepare("
+        $stmt = $pdo->prepare(" 
             SELECT CONCAT(s.SessionDate, ' ', s.StartTime) as StartTime, a.Duration 
             FROM reservations r
             JOIN sessions s ON r.SessionID = s.SessionID
@@ -121,32 +158,6 @@ try {
                 $stmt->execute([$userId, $newSession['Price'], $description]);
             }
 
-            // The actual booking logic, wrapped in a function to be reused for recurring bookings
-            function createBooking($pdo, $userId, $sessionId, $isRecurring, $recurrenceId, $parentReservationId, $paidAmount) {
-                $stmt = $pdo->prepare("SELECT CurrentBookings, (SELECT MaxCapacity FROM activities a WHERE a.ClassID = s.ClassID) as MaxCapacity FROM sessions s WHERE s.SessionID = ? FOR UPDATE");
-                $stmt->execute([$sessionId]);
-                $session = $stmt->fetch();
-
-                if ($session['CurrentBookings'] >= $session['MaxCapacity']) {
-                    throw new Exception('This class is already full.');
-                }
-
-                $stmt = $pdo->prepare("SELECT ReservationID FROM reservations WHERE UserID = ? AND SessionID = ? AND Status = 'booked'");
-                $stmt->execute([$userId, $sessionId]);
-                if ($stmt->fetch()) {
-                    throw new Exception('You have already booked this session.');
-                }
-
-                $stmt = $pdo->prepare("INSERT INTO reservations (UserID, SessionID, Status, PaidAmount, is_recurring, recurrence_id, parent_reservation_id) VALUES (?, ?, 'booked', ?, ?, ?, ?)");
-                $stmt->execute([$userId, $sessionId, $paidAmount, $isRecurring, $recurrenceId, $parentReservationId]);
-                $newReservationId = $pdo->lastInsertId();
-                
-                $stmt = $pdo->prepare("UPDATE sessions SET CurrentBookings = CurrentBookings + 1 WHERE SessionID = ?");
-                $stmt->execute([$sessionId]);
-
-                return $newReservationId;
-            }
-
             try {
                 $paidAmount = !$isMember ? $newSession['Price'] : null;
                 $recurrenceId = $repeatWeekly ? uniqid('recur_') : null;
@@ -175,10 +186,10 @@ try {
                     for ($i = 1; $i <= 2; $i++) {
                         $nextDate = (clone $originalSessionDate)->add(new DateInterval("P{$i}W"));
                         
-            // Duplicate check for this specific date
-            $stmt = $pdo->prepare("SELECT SessionID FROM sessions WHERE ClassID = ? AND SessionDate = ? AND StartTime = ? AND Status = 'scheduled'");
-            $stmt->execute([$newSession['ClassID'], $nextDate->format('Y-m-d'), $newSession['StartTime']]);
-            $recurringSession = $stmt->fetch();
+                        // Duplicate check for this specific date
+                        $stmt = $pdo->prepare("SELECT SessionID FROM sessions WHERE ClassID = ? AND SessionDate = ? AND StartTime = ? AND Status = 'scheduled'");
+                        $stmt->execute([$newSession['ClassID'], $nextDate->format('Y-m-d'), $newSession['StartTime']]);
+                        $recurringSession = $stmt->fetch();
 
                         if ($recurringSession) {
                             try {
@@ -209,7 +220,7 @@ try {
         $pdo->beginTransaction();
 
     // Get reservation details
-    $stmt = $pdo->prepare("SELECT r.ReservationID, r.SessionID, r.PaidAmount, CONCAT(s.SessionDate, ' ', s.StartTime) as SessionStart, a.ClassName, s.TrainerID 
+    $stmt = $pdo->prepare("SELECT r.ReservationID, r.SessionID, r.PaidAmount, CONCAT(s.SessionDate, ' ', s.StartTime) as SessionStart, a.ClassName, s.TrainerID, r.is_recurring, r.recurrence_id 
                            FROM reservations r 
                            JOIN sessions s ON r.SessionID = s.SessionID 
                            JOIN activities a ON s.ClassID = a.ClassID 

@@ -71,9 +71,18 @@ if (isset($_GET['detail_type'])) {
 // --- Default: Summary Stats & Chart Data ---
 try {
     // 1. Stats Counters
-    $total_registrations = $pdo->query("SELECT COUNT(*) FROM users WHERE CreatedAt >= '$last24Hours' AND Role != 'admin'")->fetchColumn();
-    $total_memberships = $pdo->query("SELECT COUNT(*) FROM payments WHERE PaymentDate >= '$last24Hours' AND Status = 'completed'")->fetchColumn();
-    $total_bookings = $pdo->query("SELECT COUNT(*) FROM reservations WHERE BookingDate >= '$last24Hours'")->fetchColumn();
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM users WHERE CreatedAt >= ? AND Role != 'admin'");
+    $stmt->execute([$last24Hours]);
+    $total_registrations = $stmt->fetchColumn();
+
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM payments WHERE PaymentDate >= ? AND Status = 'completed'");
+    $stmt->execute([$last24Hours]);
+    $total_memberships = $stmt->fetchColumn();
+
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM reservations WHERE BookingDate >= ?");
+    $stmt->execute([$last24Hours]);
+    $total_bookings = $stmt->fetchColumn();
+
     $total_sessions = $pdo->query("SELECT COUNT(*) FROM sessions WHERE Status = 'completed' AND SessionDate >= DATE_SUB(NOW(), INTERVAL 24 HOUR)")->fetchColumn();
 
     // 2. Chart Data

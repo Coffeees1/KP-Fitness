@@ -38,6 +38,16 @@ if (!in_array($gender, $allowedGenders)) {
     exit;
 }
 
+// Height and Weight Validation
+if ($height < 50 || $height > 300) {
+    echo json_encode(['success' => false, 'message' => 'Height must be between 50cm and 300cm.']);
+    exit;
+}
+if ($weight < 20 || $weight > 500) {
+    echo json_encode(['success' => false, 'message' => 'Weight must be between 20kg and 500kg.']);
+    exit;
+}
+
 // Phone Validation (Malaysia)
 if (!preg_match('/^01\d-\d{3,4} \d{4}$/', $phone)) {
     echo json_encode(['success' => false, 'message' => 'Invalid phone format. Use 01X-XXX XXXX or 01X-XXXX XXXX.']);

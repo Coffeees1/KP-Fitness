@@ -281,7 +281,6 @@ include 'includes/client_header.php';
 
 <script>
     window.dashboardConfig = {
-        csrfToken: window.clientConfig.csrfToken, // Use global csrfToken
         userHeight: <?php echo json_encode($user['Height'] ?? 0); ?>,
         showCompleteProfile: <?php echo $showCompleteProfileModal ? 'true' : 'false'; ?>
     };

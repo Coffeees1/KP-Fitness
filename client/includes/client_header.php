@@ -76,7 +76,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
     <div class="sidebar-footer">
         <ul class="nav nav-pills flex-column">
             <li class="nav-item">
-                <a href="../index.php" class="nav-link text-white" target="_blank">
+                <a href="../index.php" class="nav-link text-white">
                     <i class="fas fa-home me-2"></i> <span>View Main Site</span>
                 </a>
             </li>
@@ -97,7 +97,12 @@ $current_page = basename($_SERVER['PHP_SELF']);
 
 <main class="flex-grow-1 p-3 main-content">
     <!-- Page content will be injected here -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-    <script src="../assets/js/main.js"></script>
-</body>
-</html>
+    
+    <script>
+        // Global configuration for client-side scripts
+        // This ensures csrfToken is available on all client pages where the chatbot is present.
+        window.clientConfig = {
+            csrfToken: '<?php echo get_csrf_token(); ?>'
+        };
+    </script>
+

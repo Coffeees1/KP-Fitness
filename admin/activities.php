@@ -136,19 +136,20 @@ include 'includes/admin_header.php';
 
         <div class="row g-3">
             <div class="col-md-6">
-                <label for="activityName" class="form-label">Activity Name</label>
-                <input type="text" class="form-control" id="activityName" name="activityName" value="<?php echo htmlspecialchars($edit_activity['ClassName'] ?? ''); ?>" required>
-            </div>
-            <div class="col-md-6">
                 <label for="categoryId" class="form-label">Category</label>
-                <select class="form-select" id="categoryId" name="categoryId" required>
+                <select class="form-select" id="categoryId" name="categoryId" required onchange="updateSuggestions()">
                     <option value="">-- Select Category --</option>
                     <?php foreach ($categories as $category): ?>
-                        <option value="<?php echo $category['CategoryID']; ?>" <?php echo (isset($edit_activity) && $edit_activity['CategoryID'] == $category['CategoryID']) ? 'selected' : ''; ?>>
+                        <option value="<?php echo $category['CategoryID']; ?>" data-cat-name="<?php echo htmlspecialchars($category['CategoryName']); ?>" <?php echo (isset($edit_activity) && $edit_activity['CategoryID'] == $category['CategoryID']) ? 'selected' : ''; ?>>
                             <?php echo htmlspecialchars($category['CategoryName']); ?>
                         </option>
                     <?php endforeach; ?>
                 </select>
+            </div>
+            <div class="col-md-6">
+                <label for="activityName" class="form-label">Activity Name</label>
+                <input type="text" class="form-control" id="activityName" name="activityName" value="<?php echo htmlspecialchars($edit_activity['ClassName'] ?? ''); ?>" required list="activityNameList">
+                <datalist id="activityNameList"></datalist>
             </div>
             <div class="col-md-4">
                 <label for="difficultyLevel" class="form-label">Difficulty Level</label>
@@ -236,5 +237,45 @@ include 'includes/admin_header.php';
         </table>
     </div>
 </div>
+
+<script>
+const activitySuggestions = {
+    'Cardio': { names: ['Zumba', 'Spin Cycling', 'Aerobics', 'Step Class'], duration: 45 },
+    'Strength': { names: ['BodyPump', 'Weight Training', 'Powerlifting', 'Resistance Training'], duration: 50 },
+    'MindAndBody': { names: ['Yoga', 'Pilates', 'Tai Chi', 'Meditation'], duration: 60 },
+    'HIIT_Circuit': { names: ['Bootcamp', 'Metabolic Conditioning', 'Tabata', 'Circuit Training'], duration: 45 },
+    'Combat': { names: ['Boxing', 'Kickboxing', 'Muay Thai', 'Self Defense'], duration: 60 }
+};
+
+function updateSuggestions() {
+    const categorySelect = document.getElementById('categoryId');
+    const selectedOption = categorySelect.options[categorySelect.selectedIndex];
+    const categoryName = selectedOption.getAttribute('data-cat-name');
+    
+    const nameInput = document.getElementById('activityName');
+    const durationInput = document.getElementById('duration');
+    const dataList = document.getElementById('activityNameList');
+    
+    // Clear existing options
+    dataList.innerHTML = '';
+    
+    if (activitySuggestions[categoryName]) {
+        // Set duration suggestion
+        durationInput.value = activitySuggestions[categoryName].duration;
+        
+        // Populate datalist
+        activitySuggestions[categoryName].names.forEach(name => {
+            const option = document.createElement('option');
+            option.value = name;
+            dataList.appendChild(option);
+        });
+        
+        // Optional: Set placeholder to first suggestion
+        nameInput.placeholder = "e.g. " + activitySuggestions[categoryName].names[0];
+    } else {
+        nameInput.placeholder = "";
+    }
+}
+</script>
 
 <?php include 'includes/admin_footer.php'; ?>

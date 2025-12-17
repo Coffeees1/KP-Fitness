@@ -39,7 +39,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_profile'])) {
         $feedbackType = 'danger';
     }
 
-    if ($validPhone && $validGender) {
+    // Validation - Height and Weight limits
+    $validStats = true;
+    if ($height && ($height < 50 || $height > 300)) {
+        $validStats = false;
+        $feedbackMessage = 'Height must be between 50cm and 300cm.';
+        $feedbackType = 'danger';
+    }
+    if ($weight && ($weight < 20 || $weight > 500)) {
+        $validStats = false;
+        $feedbackMessage = 'Weight must be between 20kg and 500kg.';
+        $feedbackType = 'danger';
+    }
+
+    if ($validPhone && $validGender && $validStats) {
         try {
             $stmt = $pdo->prepare("UPDATE users SET FullName = ?, Phone = ?, DateOfBirth = ?, Height = ?, Weight = ?, Gender = ? WHERE UserID = ?");
             if ($stmt->execute([$fullName, $phone, $dateOfBirth, $height, $weight, $gender, $userId])) {

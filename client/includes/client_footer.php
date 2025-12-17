@@ -31,14 +31,8 @@
 
 <script src="../assets/js/vanilla-js-calendar/vanilla-calendar.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<script>
-    // Global configuration for client-side scripts
-    // This ensures csrfToken is available on all client pages where the chatbot is present.
-    window.clientConfig = {
-        csrfToken: '<?php echo get_csrf_token(); ?>'
-    };
-</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+<script src="../assets/js/main.js"></script>
 <script src="../assets/js/client-chatbot.js"></script>
 
 </body>

@@ -8,8 +8,9 @@ $feedback = [];
 
 // Handle Cancellation / Rescheduling
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'cancel_session') {
+    validate_csrf_token($_POST['csrf_token']);
     $sessionId = intval($_POST['session_id']);
-    $reason = $_POST['reason'] ?? '';
+    $reason = sanitize_input($_POST['reason'] ?? '');
     $reschedule = isset($_POST['reschedule']) && $_POST['reschedule'] === 'yes';
     
     try {
@@ -45,9 +46,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             $stmt = $pdo->prepare("UPDATE sessions SET SessionDate = ?, StartTime = ?, EndTime = ?, Status = 'scheduled' WHERE SessionID = ?");
             $stmt->execute([$newDate, $newTime, $newEndTime, $sessionId]);
             
-            // Notify clients (Placeholder)
-            // $clients = get_booked_clients($sessionId);
-            // foreach($clients as $client) { create_notification($client['UserID'], 'Session Rescheduled', "Class rescheduled to $newDate $newTime. Reason: $reason"); }
+            // Notify clients
+            $stmt = $pdo->prepare("SELECT UserID FROM reservations WHERE SessionID = ? AND Status = 'booked'");
+            $stmt->execute([$sessionId]);
+            $clients = $stmt->fetchAll(PDO::FETCH_COLUMN);
+            
+            foreach($clients as $clientId) { 
+                create_notification(
+                    $clientId, 
+                    'Session Rescheduled', 
+                    "Class rescheduled to " . format_date($newDate) . " at " . format_time($newTime) . ". Reason: $reason",
+                    'warning'
+                ); 
+            }
 
             $feedback = ['type' => 'success', 'message' => 'Session successfully rescheduled.'];
         } else {
@@ -377,6 +388,7 @@ include 'includes/trainer_header.php';
             </div>
             <div class="modal-body">
                 <form id="cancelForm" method="POST">
+                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(get_csrf_token()); ?>">
                     <input type="hidden" name="action" value="cancel_session">
                     <input type="hidden" name="session_id" id="cancelSessionId">
                     

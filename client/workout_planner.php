@@ -325,7 +325,7 @@ include 'includes/client_header.php';
 
 <div class="row" style="min-height: 750px;">
     <!-- Generator Form -->
-    <div class="col-lg-8 mb-4">
+    <div class="col-lg-6 mb-4">
         <div class="card h-100">
             <div class="card-header">
                 <h5 class="mb-0">Create Your Plan</h5>
@@ -392,7 +392,7 @@ include 'includes/client_header.php';
     </div>
 
     <!-- Result -->
-    <div class="col-lg-4 mb-4">
+    <div class="col-lg-6 mb-4">
         <div class="card h-100">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">Generated Plan</h5>
@@ -489,20 +489,40 @@ include 'includes/client_header.php';
 
 <style>
 .card-header h5 {
-    font-size: 1.5rem; /* Larger header title */
+    font-size: 1.8rem; /* Even Larger header title */
 }
 #generator-form .form-label {
-    font-size: 1.1rem; /* Larger labels */
-    margin-bottom: 0.5rem;
+    font-size: 1.25rem; /* Even Larger labels */
+    margin-bottom: 0.6rem;
 }
 #generator-form .form-control,
 #generator-form .form-select {
-    font-size: 1.1rem; /* Larger input/select text */
-    padding: 0.75rem 1rem;
-    height: auto; /* Adjust height based on padding */
+    font-size: 1.25rem; /* Even Larger input/select text */
+    padding: 1rem 1.2rem;
+    height: auto;
 }
 #generator-form .form-check-label {
-    font-size: 1.05rem; /* Larger checkbox labels */
+    font-size: 1.15rem; /* Even Larger checkbox labels */
+}
+
+/* Styles for Generated Plan content */
+.card-body h5 { /* Targeted for Generated Plan's sub-headers */
+    font-size: 1.8rem;
+}
+.accordion-button {
+    font-size: 1.25rem; /* Larger text for accordion day titles */
+}
+.accordion-body .list-group-item {
+    font-size: 1.15rem; /* Larger text for exercise details */
+}
+.accordion-body .badge {
+    font-size: 0.95rem; /* Slightly larger badges */
+}
+.alert.alert-info {
+    font-size: 1.15rem; /* Larger text for pro tip */
+}
+.text-center.text-muted p {
+    font-size: 1.25rem; /* Larger text for empty state message */
 }
 .hover-card {
     transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;

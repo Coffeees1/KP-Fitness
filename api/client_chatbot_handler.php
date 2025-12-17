@@ -79,6 +79,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt_plan->execute([$userId]);
         $latestPlan = $stmt_plan->fetchColumn();
 
+        // --- NEW: Get Real-time Gym Traffic ---
+        // Sum of bookings for sessions that are currently 'ongoing' or starting within +/- 1 hour
+        $stmt_traffic = $pdo->query("SELECT SUM(CurrentBookings) FROM sessions WHERE Status = 'ongoing' OR (SessionDate = CURDATE() AND StartTime BETWEEN DATE_SUB(NOW(), INTERVAL 1 HOUR) AND DATE_ADD(NOW(), INTERVAL 1 HOUR))");
+        $currentTraffic = $stmt_traffic->fetchColumn() ?: 0;
+        $trafficLevel = $currentTraffic > 20 ? "High" : ($currentTraffic > 10 ? "Moderate" : "Low");
+
+        // --- NEW: Get Next 10 Available Classes ---
+        $stmt_schedule = $pdo->prepare("
+            SELECT s.SessionDate, s.StartTime, a.ClassName, u.FullName as TrainerName 
+            FROM sessions s 
+            JOIN activities a ON s.ClassID = a.ClassID 
+            JOIN users u ON s.TrainerID = u.UserID 
+            WHERE s.SessionDate >= CURDATE() AND s.Status = 'scheduled'
+            ORDER BY s.SessionDate, s.StartTime 
+            LIMIT 10
+        ");
+        $stmt_schedule->execute();
+        $upcomingSchedule = $stmt_schedule->fetchAll(PDO::FETCH_ASSOC);
+
         // Build context string
         $context_info .= "Their next class is: " . ($nextBooking ? htmlspecialchars($nextBooking['ClassName']) . " on " . format_date($nextBooking['SessionDate']) : "None") . ". ";
         if ($membership) {
@@ -87,6 +106,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $context_info .= "They do not have an active membership. ";
         }
         $context_info .= "Their latest workout plan is: '" . ($latestPlan ? htmlspecialchars($latestPlan) : "None") . "'. ";
+        
+        $context_info .= "Current gym traffic is {$trafficLevel} (approx. {$currentTraffic} people in classes). ";
+        
+        $context_info .= "Upcoming classes in the gym schedule: ";
+        if ($upcomingSchedule) {
+            foreach ($upcomingSchedule as $class) {
+                $context_info .= "[{$class['ClassName']} with {$class['TrainerName']} on " . date('D, M j', strtotime($class['SessionDate'])) . " at " . format_time($class['StartTime']) . "], ";
+            }
+        } else {
+            $context_info .= "No upcoming classes found. ";
+        }
 
     } catch (PDOException $e) {
         // If database fails, the AI won't have context, which is acceptable.

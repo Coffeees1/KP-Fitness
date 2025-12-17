@@ -13,12 +13,22 @@ $date = $_GET['date'];
 $categoryId = $_GET['category_id'] ?? null;
 $difficulty = $_GET['difficulty'] ?? null;
 
+$userId = $_SESSION['UserID'];
+
 try {
-$sql = "SELECT s.SessionID, s.SessionDate, s.StartTime, a.ClassName as ActivityName, a.MaxCapacity, u.FullName as TrainerName, s.CurrentBookings
+$sql = "SELECT s.SessionID, s.SessionDate, s.StartTime, a.ClassName as ActivityName, a.MaxCapacity, u.FullName as TrainerName, s.CurrentBookings,
+        (SELECT COUNT(*) FROM reservations r WHERE r.SessionID = s.SessionID AND r.UserID = ? AND r.Status = 'booked') as IsBooked
         FROM sessions s
         JOIN activities a ON s.ClassID = a.ClassID
         JOIN users u ON s.TrainerID = u.UserID
         WHERE s.SessionDate = ? AND s.Status != 'cancelled'";
+
+$params = [$userId, $date];
+
+// If requesting for today, filter out past times
+if ($date === date('Y-m-d')) {
+    $sql .= " AND s.StartTime > CURTIME()";
+}
 
 if ($categoryId) {
     $sql .= " AND a.CategoryID = ?";

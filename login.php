@@ -92,6 +92,9 @@ include 'includes/header.php';
                     <div class="mb-3">
                         <label for="password" class="form-label">Password</label>
                         <input type="password" class="form-control" id="password" name="password" required>
+                        <div class="text-end mt-1">
+                            <a href="forgot_password.php" class="text-decoration-none small">Forgot Password?</a>
+                        </div>
                     </div>
                     <div class="d-grid">
                         <button type="submit" class="btn btn-warning">Login</button>

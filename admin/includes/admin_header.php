@@ -71,7 +71,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
     <div class="sidebar-footer">
         <ul class="nav nav-pills flex-column">
             <li class="nav-item">
-                <a href="../index.php" class="nav-link text-white" target="_blank">
+                <a href="../index.php" class="nav-link text-white">
                     <i class="fas fa-home me-2"></i> <span>View Main Site</span>
                 </a>
             </li>

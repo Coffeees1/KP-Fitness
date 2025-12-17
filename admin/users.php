@@ -5,35 +5,88 @@ require_admin();
 
 $feedback = [];
 
-// --- Handle Form Submissions ---
+$edit_user = null;
 
-// Handle trainer creation
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_trainer'])) {
+// Handle Edit Request (GET)
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['edit'])) {
+    $editId = intval($_GET['edit']);
+    try {
+        $stmt = $pdo->prepare("SELECT * FROM users WHERE UserID = ?");
+        $stmt->execute([$editId]);
+        $edit_user = $stmt->fetch(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+        $feedback = ['type' => 'danger', 'message' => 'Error fetching user: ' . $e->getMessage()];
+    }
+}
+
+// Handle Form Submissions ---
+
+// Handle trainer creation OR update
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && (isset($_POST['create_trainer']) || isset($_POST['update_trainer']))) {
     validate_csrf_token($_POST['csrf_token']);
+    $isUpdate = isset($_POST['update_trainer']);
+    $userId = $isUpdate ? intval($_POST['userId']) : null;
+    
     $fullName = sanitize_input($_POST['fullName']);
     $email = sanitize_input($_POST['email']);
     $password = $_POST['password'];
     $gender = sanitize_input($_POST['gender']);
+    $specialist = sanitize_input($_POST['specialist'] ?? '');
+    $workingHours = sanitize_input($_POST['workingHours'] ?? '');
+    $jobType = sanitize_input($_POST['jobType'] ?? '');
     
     // Basic Validation
-    if (empty($fullName) || empty($email) || empty($password) || empty($gender)) {
-        $feedback = ['type' => 'danger', 'message' => 'Please fill in all required fields.'];
+    if (empty($fullName) || empty($email) || empty($gender)) {
+        $feedback = ['type' => 'danger', 'message' => 'Please fill in all required fields (Name, Email, Gender).'];
+    } elseif (!$isUpdate && empty($password)) {
+        $feedback = ['type' => 'danger', 'message' => 'Password is required for new accounts.'];
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $feedback = ['type' => 'danger', 'message' => 'Invalid email format.'];
     } else {
         try {
-            // Check if email already exists
-            $stmt = $pdo->prepare("SELECT UserID FROM users WHERE Email = ?");
-            $stmt->execute([$email]);
+            // Check if email already exists (exclude current user on update)
+            $sql = "SELECT UserID FROM users WHERE Email = ?";
+            $params = [$email];
+            if ($isUpdate) {
+                $sql .= " AND UserID != ?";
+                $params[] = $userId;
+            }
+            
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute($params);
+            
             if ($stmt->fetch()) {
                 $feedback = ['type' => 'danger', 'message' => 'An account with this email already exists.'];
             } else {
-                $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
-                $stmt = $pdo->prepare("INSERT INTO users (FullName, Email, Password, Role, Gender) VALUES (?, ?, ?, 'trainer', ?)");
-                if ($stmt->execute([$fullName, $email, $hashedPassword, $gender])) {
-                    $feedback = ['type' => 'success', 'message' => 'Trainer account created successfully.'];
+                if ($isUpdate) {
+                    // Update Logic
+                    $sql = "UPDATE users SET FullName = ?, Email = ?, Gender = ?, Specialist = ?, WorkingHours = ?, JobType = ?";
+                    $params = [$fullName, $email, $gender, $specialist, $workingHours, $jobType];
+                    
+                    if (!empty($password)) {
+                        $sql .= ", Password = ?";
+                        $params[] = password_hash($password, PASSWORD_DEFAULT);
+                    }
+                    
+                    $sql .= " WHERE UserID = ?";
+                    $params[] = $userId;
+                    
+                    $stmt = $pdo->prepare($sql);
+                    if ($stmt->execute($params)) {
+                        $feedback = ['type' => 'success', 'message' => 'Trainer updated successfully.'];
+                        $edit_user = null; // Clear edit mode
+                    } else {
+                        $feedback = ['type' => 'danger', 'message' => 'Failed to update trainer.'];
+                    }
                 } else {
-                    $feedback = ['type' => 'danger', 'message' => 'Failed to create trainer account.'];
+                    // Create Logic
+                    $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+                    $stmt = $pdo->prepare("INSERT INTO users (FullName, Email, Password, Role, Gender, Specialist, WorkingHours, JobType) VALUES (?, ?, ?, 'trainer', ?, ?, ?, ?)");
+                    if ($stmt->execute([$fullName, $email, $hashedPassword, $gender, $specialist, $workingHours, $jobType])) {
+                        $feedback = ['type' => 'success', 'message' => 'Trainer account created successfully.'];
+                    } else {
+                        $feedback = ['type' => 'danger', 'message' => 'Failed to create trainer account.'];
+                    }
                 }
             }
         } catch (PDOException $e) {
@@ -88,8 +141,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_user'])) {
 
 // --- Fetch Data for Display ---
 try {
-    // Fetch all users including admins
-    $stmt = $pdo->prepare("SELECT UserID, FullName, Email, Role, IsActive, Gender FROM users ORDER BY Role, FullName");
+    // Fetch all users including admins, now with Trainer details
+    $stmt = $pdo->prepare("SELECT UserID, FullName, Email, Role, IsActive, Gender, Specialist, WorkingHours, JobType FROM users ORDER BY Role, FullName");
     $stmt->execute();
     $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
@@ -155,35 +208,71 @@ include 'includes/admin_header.php';
     </div>
 <?php endif; ?>
 
-<!-- Create Trainer Form -->
+<!-- Create/Edit Trainer Form -->
 <div class="mb-4">
-    <h3 class="mb-3">Create New Trainer</h3>
+    <h3 class="mb-3"><?php echo $edit_user ? 'Edit Trainer: ' . htmlspecialchars($edit_user['FullName']) : 'Create New Trainer'; ?></h3>
     <form action="users.php" method="POST">
         <input type="hidden" name="csrf_token" value="<?php echo get_csrf_token(); ?>">
+        <?php if ($edit_user): ?>
+            <input type="hidden" name="userId" value="<?php echo $edit_user['UserID']; ?>">
+            <input type="hidden" name="update_trainer" value="1">
+        <?php else: ?>
+            <input type="hidden" name="create_trainer" value="1">
+        <?php endif; ?>
+        
         <div class="row g-3">
             <div class="col-md-3">
                 <label for="fullName" class="form-label">Full Name</label>
-                <input type="text" class="form-control" id="fullName" name="fullName" required>
+                <input type="text" class="form-control" id="fullName" name="fullName" value="<?php echo htmlspecialchars($edit_user['FullName'] ?? ''); ?>" required>
             </div>
             <div class="col-md-3">
                 <label for="email" class="form-label">Email</label>
-                <input type="email" class="form-control" id="email" name="email" required>
+                <input type="email" class="form-control" id="email" name="email" value="<?php echo htmlspecialchars($edit_user['Email'] ?? ''); ?>" required>
             </div>
             <div class="col-md-3">
-                <label for="password" class="form-label">Password</label>
-                <input type="password" class="form-control" id="password" name="password" required>
+                <label for="password" class="form-label">Password <?php echo $edit_user ? '(Leave blank to keep)' : ''; ?></label>
+                <input type="password" class="form-control" id="password" name="password" <?php echo $edit_user ? '' : 'required'; ?>>
             </div>
             <div class="col-md-3">
                 <label for="gender" class="form-label">Gender</label>
                 <select class="form-select" id="gender" name="gender" required>
                     <option value="">Select...</option>
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                    <option value="Other">Other</option>
+                    <option value="Male" <?php echo ($edit_user['Gender'] ?? '') === 'Male' ? 'selected' : ''; ?>>Male</option>
+                    <option value="Female" <?php echo ($edit_user['Gender'] ?? '') === 'Female' ? 'selected' : ''; ?>>Female</option>
+                    <option value="Other" <?php echo ($edit_user['Gender'] ?? '') === 'Other' ? 'selected' : ''; ?>>Other</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="specialist" class="form-label">Specialist</label>
+                <select class="form-select" id="specialist" name="specialist">
+                    <option value="">-- Select Specialty --</option>
+                    <?php
+                        // Fetch categories for specialist dropdown
+                        $stmt_cat = $pdo->query("SELECT CategoryName FROM class_categories ORDER BY CategoryName");
+                        while ($cat = $stmt_cat->fetch(PDO::FETCH_ASSOC)) {
+                            $selected = ($edit_user['Specialist'] ?? '') === $cat['CategoryName'] ? 'selected' : '';
+                            echo '<option value="' . htmlspecialchars($cat['CategoryName']) . '" ' . $selected . '>' . htmlspecialchars($cat['CategoryName']) . '</option>';
+                        }
+                    ?>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="workingHours" class="form-label">Working Hours</label>
+                <input type="text" class="form-control" id="workingHours" name="workingHours" value="<?php echo htmlspecialchars($edit_user['WorkingHours'] ?? ''); ?>" placeholder="e.g., 9AM - 5PM">
+            </div>
+            <div class="col-md-3">
+                <label for="jobType" class="form-label">Job Type</label>
+                <select class="form-select" id="jobType" name="jobType">
+                    <option value="">-- Select Type --</option>
+                    <option value="Full-time" <?php echo ($edit_user['JobType'] ?? '') === 'Full-time' ? 'selected' : ''; ?>>Full-time</option>
+                    <option value="Part-time" <?php echo ($edit_user['JobType'] ?? '') === 'Part-time' ? 'selected' : ''; ?>>Part-time</option>
                 </select>
             </div>
             <div class="col-12">
-                <button type="submit" name="create_trainer" class="btn btn-primary">Create Trainer</button>
+                <button type="submit" class="btn btn-primary"><?php echo $edit_user ? 'Update Trainer' : 'Create Trainer'; ?></button>
+                <?php if ($edit_user): ?>
+                    <a href="users.php" class="btn btn-secondary">Cancel Edit</a>
+                <?php endif; ?>
             </div>
         </div>
     </form>
@@ -195,7 +284,7 @@ include 'includes/admin_header.php';
     <div class="row">
         <!-- Admin Folder -->
         <div class="col-md-4 mb-3">
-            <div class="card user-folder-card h-100 text-center p-4" onclick="openUserModal('admin')">
+            <div class="card user-folder-card h-100 text-center p-4" id="folder-admin">
                 <div class="folder-icon"><i class="fas fa-user-shield"></i></div>
                 <h4 class="folder-title-style">Administrators</h4>
                 <p class="text-muted">Manage system admins</p>
@@ -204,7 +293,7 @@ include 'includes/admin_header.php';
         </div>
         <!-- Trainer Folder -->
         <div class="col-md-4 mb-3">
-            <div class="card user-folder-card h-100 text-center p-4" onclick="openUserModal('trainer')">
+            <div class="card user-folder-card h-100 text-center p-4" id="folder-trainer">
                 <div class="folder-icon"><i class="fas fa-user-tie"></i></div>
                 <h4 class="folder-title-style">Trainers</h4>
                 <p class="text-muted">Manage fitness trainers</p>
@@ -213,7 +302,7 @@ include 'includes/admin_header.php';
         </div>
         <!-- Client Folder -->
         <div class="col-md-4 mb-3">
-            <div class="card user-folder-card h-100 text-center p-4" onclick="openUserModal('client')">
+            <div class="card user-folder-card h-100 text-center p-4" id="folder-client">
                 <div class="folder-icon"><i class="fas fa-user"></i></div>
                 <h4 class="folder-title-style">Clients</h4>
                 <p class="text-muted">Manage gym members</p>
@@ -261,6 +350,9 @@ include 'includes/admin_header.php';
                                 <th>Full Name</th>
                                 <th>Email</th>
                                 <th id="genderColHeader">Gender</th>
+                                <th id="specColHeader" style="display:none">Specialist</th>
+                                <th id="hoursColHeader" style="display:none">Hours</th>
+                                <th id="jobColHeader" style="display:none">Job Type</th>
                                 <th>Status</th>
                                 <th>Action</th>
                             </tr>
@@ -297,6 +389,7 @@ include 'includes/admin_header.php';
 </div>
 
 <script>
+document.addEventListener('DOMContentLoaded', () => {
     const allUsers = <?php echo json_encode($users); ?>;
     const csrfToken = '<?php echo get_csrf_token(); ?>';
     
@@ -305,6 +398,15 @@ include 'includes/admin_header.php';
     let currentPage = 1;
     const itemsPerPage = 20;
     let filteredUsers = [];
+
+    // Event Listeners for Folders
+    const folderAdmin = document.getElementById('folder-admin');
+    const folderTrainer = document.getElementById('folder-trainer');
+    const folderClient = document.getElementById('folder-client');
+
+    if(folderAdmin) folderAdmin.addEventListener('click', () => openUserModal('admin'));
+    if(folderTrainer) folderTrainer.addEventListener('click', () => openUserModal('trainer'));
+    if(folderClient) folderClient.addEventListener('click', () => openUserModal('client'));
 
     function openUserModal(role) {
         currentRole = role;
@@ -315,11 +417,16 @@ include 'includes/admin_header.php';
         document.getElementById('userStatusFilter').value = 'all';
         document.getElementById('userGenderFilter').value = 'all';
         
-        // Show/Hide Gender Column based on role (Admin usually doesn't need it, but request said Trainer/Client)
-        // Request said: 'pop-up display should also display "gender" for "Trainer" and "Client"'
+        // Show/Hide Gender Column based on role
         const showGender = (role === 'trainer' || role === 'client');
         document.getElementById('genderColHeader').style.display = showGender ? 'table-cell' : 'none';
         document.getElementById('userGenderFilter').parentElement.style.display = showGender ? 'block' : 'none';
+        
+        // Show/Hide Trainer specific columns
+        const showTrainerCols = (role === 'trainer');
+        document.getElementById('specColHeader').style.display = showTrainerCols ? 'table-cell' : 'none';
+        document.getElementById('hoursColHeader').style.display = showTrainerCols ? 'table-cell' : 'none';
+        document.getElementById('jobColHeader').style.display = showTrainerCols ? 'table-cell' : 'none';
         
         // Update Modal Title
         document.getElementById('userModalTitle').textContent = role + 's';
@@ -328,7 +435,8 @@ include 'includes/admin_header.php';
         filterAndRender();
         
         // Show Modal
-        const modal = new bootstrap.Modal(document.getElementById('userModal'));
+        const modalEl = document.getElementById('userModal');
+        const modal = new bootstrap.Modal(modalEl);
         modal.show();
     }
 
@@ -395,13 +503,14 @@ include 'includes/admin_header.php';
             renderTable();
         }
     }
+    window.changePage = changePage;
 
     function renderTable() {
         const tbody = document.getElementById('userTableBody');
         tbody.innerHTML = '';
         
         if (filteredUsers.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">No users found.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted">No users found.</td></tr>';
             updatePaginationUI(0);
             return;
         }
@@ -412,6 +521,7 @@ include 'includes/admin_header.php';
         const pageData = filteredUsers.slice(startIndex, endIndex);
 
         const showGender = (currentRole === 'trainer' || currentRole === 'client');
+        const showTrainerCols = (currentRole === 'trainer');
 
         pageData.forEach(user => {
             const tr = document.createElement('tr');
@@ -432,7 +542,17 @@ include 'includes/admin_header.php';
                     <form action="users.php" method="POST" class="d-inline">
                         <input type="hidden" name="csrf_token" value="${csrfToken}">
                         <input type="hidden" name="userId" value="${user.UserID}">
-                        <button type="submit" name="${actionName}" class="btn ${actionBtnClass} btn-sm">${actionBtnText}</button>
+                `;
+
+                // Add Edit button for Trainers
+                if (user.Role === 'trainer') {
+                    actionButtons += `
+                        <a href="users.php?edit=${user.UserID}" class="btn btn-primary btn-sm me-1">Edit</a>
+                    `;
+                }
+
+                actionButtons += `
+                        <button type="submit" name="${actionName}" class="btn ${actionBtnClass} btn-sm me-1">${actionBtnText}</button>
                 `;
                 
                 // Only allow deletion for non-client/non-admin roles (e.g. Trainers) if needed, 
@@ -449,11 +569,19 @@ include 'includes/admin_header.php';
             }
 
             const genderCell = showGender ? `<td>${escapeHtml(user.Gender || '-')}</td>` : '<td style="display:none"></td>';
+            
+            // New Trainer Columns
+            const specCell = showTrainerCols ? `<td>${escapeHtml(user.Specialist || '-')}</td>` : '<td style="display:none"></td>';
+            const hoursCell = showTrainerCols ? `<td>${escapeHtml(user.WorkingHours || '-')}</td>` : '<td style="display:none"></td>';
+            const jobCell = showTrainerCols ? `<td>${escapeHtml(user.JobType || '-')}</td>` : '<td style="display:none"></td>';
 
             tr.innerHTML = `
                 <td>${escapeHtml(user.FullName)}</td>
                 <td>${escapeHtml(user.Email)}</td>
                 ${genderCell}
+                ${specCell}
+                ${hoursCell}
+                ${jobCell}
                 <td>${statusBadge}</td>
                 <td>${actionButtons}</td>
             `;
@@ -484,6 +612,7 @@ include 'includes/admin_header.php';
             .replace(/"/g, "&quot;")
             .replace(/'/g, "&#039;");
     }
+});
 </script>
 
 <?php include 'includes/admin_footer.php'; ?>

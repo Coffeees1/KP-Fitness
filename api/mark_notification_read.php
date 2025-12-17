@@ -1,6 +1,11 @@
 <?php
 require_once '../includes/config.php';
-require_client();
+// Allow any logged-in user (Client, Trainer, Admin) to mark their own notifications
+if (!is_logged_in()) {
+    http_response_code(401);
+    echo json_encode(['success' => false, 'message' => 'Unauthorized']);
+    exit;
+}
 
 header('Content-Type: application/json');
 

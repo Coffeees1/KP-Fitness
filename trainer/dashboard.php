@@ -9,13 +9,13 @@ $feedback = [];
 // --- Fetch Data for Display ---
 try {
 // Get today's schedule
-$stmt = $pdo->prepare("
-    SELECT s.SessionDate, s.StartTime, c.ClassName 
-    FROM sessions s
-    JOIN activities c ON s.ClassID = c.ClassID
-    WHERE s.TrainerID = ? AND s.SessionDate = CURDATE() AND s.Status != 'cancelled'
-    ORDER BY s.SessionDate, s.StartTime
-");
+    $stmt = $pdo->prepare("
+        SELECT s.SessionID, s.SessionDate, s.StartTime, s.Room, s.CurrentBookings, c.ClassName, c.MaxCapacity 
+        FROM sessions s
+        JOIN activities c ON s.ClassID = c.ClassID
+        WHERE s.TrainerID = ? AND s.SessionDate = CURDATE() AND s.Status != 'cancelled'
+        ORDER BY s.SessionDate, s.StartTime
+    ");
     $stmt->execute([$trainerId]);
     $todaysSchedule = $stmt->fetchAll();
     
@@ -39,6 +39,12 @@ $stmt = $pdo->prepare("
     $stmt = $pdo->prepare("SELECT COUNT(*) FROM reservations r JOIN sessions s ON r.SessionID = s.SessionID WHERE s.TrainerID = ?");
     $stmt->execute([$trainerId]);
     $totalClientBookings = $stmt->fetchColumn();
+
+    // Calculate Average Rating
+    $stmt = $pdo->prepare("SELECT AVG(RatingScore) FROM ratings WHERE TrainerID = ?");
+    $stmt->execute([$trainerId]);
+    $avgRating = $stmt->fetchColumn();
+    $avgRating = $avgRating ? number_format($avgRating, 1) : 'N/A';
 
 } catch (PDOException $e) {
     $feedback = ['type' => 'danger', 'message' => 'Could not fetch dashboard data: ' . $e->getMessage()];
@@ -242,7 +248,7 @@ include 'includes/trainer_header.php';
                     <i class="fas fa-star"></i>
                 </div>
                 <div class="stat-content">
-                    <div class="stat-value">4.7 <i class="fas fa-star text-warning" style="font-size: 0.6em; vertical-align: middle;"></i></div>
+                    <div class="stat-value"><?php echo $avgRating; ?> <i class="fas fa-star text-warning" style="font-size: 0.6em; vertical-align: middle;"></i></div>
                     <div class="stat-label">Average Rating</div>
                 </div>
             </div>

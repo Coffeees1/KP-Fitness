@@ -146,6 +146,29 @@ function createActivities($pdo, $classesData) {
     return $pdo->query("SELECT Specialist, ClassID FROM activities")->fetchAll(PDO::FETCH_GROUP | PDO::FETCH_COLUMN);
 }
 
+function importCustomUsers($pdo) {
+    echo "Importing custom users...\n";
+    $file = __DIR__ . '/custom_users.json';
+    if (!file_exists($file)) return;
+    
+    $users = json_decode(file_get_contents($file), true);
+    if (!$users) return;
+    
+    $stmt = $pdo->prepare("INSERT INTO users (FullName, Email, Password, Role, Phone, Gender, DateOfBirth, Height, Weight, Specialist, WorkingHours, JobType, ProfilePicture, MembershipID, MembershipStartDate, MembershipEndDate, NextMembershipID, AutoRenew, DaysOff) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    
+    foreach ($users as $user) {
+        $stmt->execute([
+            $user['FullName'], $user['Email'], $user['Password'], $user['Role'], 
+            $user['Phone'], $user['Gender'], $user['DateOfBirth'], $user['Height'], 
+            $user['Weight'], $user['Specialist'], $user['WorkingHours'], $user['JobType'], 
+            $user['ProfilePicture'], $user['MembershipID'], $user['MembershipStartDate'], 
+            $user['MembershipEndDate'], $user['NextMembershipID'], $user['AutoRenew'], 
+            $user['DaysOff']
+        ]);
+    }
+    echo count($users) . " custom users imported.\n";
+}
+
 function createSessions($pdo, $year, $sessionTimes, $trainersBySpecialty, $activitiesBySpecialty) {
     echo "Creating sessions for $year...\n";
     $stmt = $pdo->prepare("INSERT INTO sessions (SessionDate, StartTime, EndTime, Room, ClassID, TrainerID) VALUES (?, ?, ?, ?, ?, ?)");
@@ -171,10 +194,17 @@ function createSessions($pdo, $year, $sessionTimes, $trainersBySpecialty, $activ
         $currentDate = $date->format('Y-m-d');
         $dayOfWeek = (int)$date->format('w'); // 0 (Sun) to 6 (Sat)
         $trainerSchedule[$currentDate] = [];
+        $sessionsPerSpecialty[$currentDate] = []; // Track sessions per specialty
 
         foreach ($sessionTimes as $time) {
             foreach ($activitiesBySpecialty as $specialty => $activities) {
                 if (!isset($trainersBySpecialty[$specialty])) continue;
+
+                // Limit sessions per specialty per day to 4
+                if (!isset($sessionsPerSpecialty[$currentDate][$specialty])) {
+                    $sessionsPerSpecialty[$currentDate][$specialty] = 0;
+                }
+                if ($sessionsPerSpecialty[$currentDate][$specialty] >= 4) continue;
 
                 $activityId = $activities[array_rand($activities)];
                 
@@ -220,6 +250,7 @@ function createSessions($pdo, $year, $sessionTimes, $trainersBySpecialty, $activ
                     $trainerSchedule[$currentDate][$time] = [];
                 }
                 $trainerSchedule[$currentDate][$time][] = $trainerId;
+                $sessionsPerSpecialty[$currentDate][$specialty]++;
             }
         }
     }
@@ -228,8 +259,8 @@ function createSessions($pdo, $year, $sessionTimes, $trainersBySpecialty, $activ
 
 function createClients($pdo, $numClients) {
     echo "Creating $numClients clients...\n";
-    // Added Gender to INSERT
-    $stmt = $pdo->prepare("INSERT INTO users (FullName, Email, Password, Role, Phone, Gender, DateOfBirth, Height, Weight, MembershipID, MembershipStartDate, MembershipEndDate) VALUES (?, ?, ?, 'client', ?, ?, ?, ?, ?, ?, ?, ?)");
+    // Added Gender and AutoRenew to INSERT
+    $stmt = $pdo->prepare("INSERT INTO users (FullName, Email, Password, Role, Phone, Gender, DateOfBirth, Height, Weight, MembershipID, MembershipStartDate, MembershipEndDate, AutoRenew) VALUES (?, ?, ?, 'client', ?, ?, ?, ?, ?, ?, ?, ?, ?)");
     $membershipIds = $pdo->query("SELECT MembershipID, Duration FROM membership")->fetchAll(PDO::FETCH_KEY_PAIR);
     
     for ($i = 0; $i < $numClients; $i++) {
@@ -251,6 +282,8 @@ function createClients($pdo, $numClients) {
         $membershipId = null;
         $startDate = null;
         $endDate = null;
+        $autoRenew = 0;
+
         if ($hasMembership) {
             $membershipId = array_rand($membershipIds);
             
@@ -267,9 +300,11 @@ function createClients($pdo, $numClients) {
             $endDate->add(new DateInterval('P' . $membershipIds[$membershipId] . 'D'));
             $startDate = $startDate->format('Y-m-d');
             $endDate = $endDate->format('Y-m-d');
+            
+            $autoRenew = 1; // Enable auto-renew for seeded members
         }
 
-        $stmt->execute([$fullName, $email, $password, $phone, $gender, $dob, $height, $weight, $membershipId, $startDate, $endDate]);
+        $stmt->execute([$fullName, $email, $password, $phone, $gender, $dob, $height, $weight, $membershipId, $startDate, $endDate, $autoRenew]);
     }
     echo "$numClients clients created.\n";
 }
@@ -289,7 +324,7 @@ function createBookings($pdo, $numClients, $maxBookings) {
         $numBookings = rand(1, $maxBookings);
         for ($i = 0; $i < $numBookings; $i++) {
             if(empty($sessions)) continue;
-            $session = $sessions[array_rand($sessions)];
+            $session = $sessions[array_rand($sessions)]; // Using PAST sessions variable from previous fetch
             $status = 'attended';
             $bookingDate = new DateTime($session['SessionDate']);
             $bookingDate->sub(new DateInterval('P' . rand(1, 30) . 'D'));
@@ -301,6 +336,24 @@ function createBookings($pdo, $numClients, $maxBookings) {
             }
         }
     }
+    
+    // 2. Future Bookings (New Request)
+    $futureSessions = $pdo->query("SELECT SessionID, SessionDate FROM sessions WHERE SessionDate >= CURRENT_DATE")->fetchAll(PDO::FETCH_ASSOC);
+    if (!empty($futureSessions)) {
+        echo "Creating future bookings...\n";
+        foreach ($clients as $client) {
+            for ($i = 0; $i < 3; $i++) { // 3 Future bookings per client
+                $session = $futureSessions[array_rand($futureSessions)];
+                $status = 'booked';
+                $bookingDate = new DateTime(); // Booked today
+                try {
+                    $stmt->execute([$client, $session['SessionID'], $status, $bookingDate->format('Y-m-d H:i:s')]);
+                    $updateSessionStmt->execute([$session['SessionID']]);
+                } catch (PDOException $e) { }
+            }
+        }
+    }
+
     echo "Bookings created.\n";
 }
 
@@ -382,6 +435,8 @@ try {
     createSessions($pdo, YEAR, $sessionTimes, $trainersBySpecialty, $activitiesBySpecialty);
 
     createClients($pdo, NUM_CLIENTS);
+    
+    importCustomUsers($pdo); // Restore saved users
 
     createBookings($pdo, NUM_CLIENTS, MAX_BOOKINGS_PER_CLIENT);
 
